@@ -5,14 +5,20 @@ OUT=os.path.join(ROOT,'output','NanoBanana_References')
 P=adsk.core.Point3D.create
 
 def run(context):
+    global OUT
+    settings=context if isinstance(context,dict) else {}
+    if settings.get('output'):OUT=os.path.join(ROOT,'output',settings['output'])
     app=adsk.core.Application.get();os.makedirs(OUT,exist_ok=True)
-    vp=app.activeViewport;oldcam=vp.camera;style=vp.visualStyle;saved=[]
+    vp=app.activeViewport;oldcam=vp.camera;style=vp.visualStyle;saved=[];selectable=[]
     report={'images':[]}
     try:
         doc=app.activeDocument
         expected=json.load(open(os.path.join(ROOT,'output','revision2','master_save_record.json')))['data_file_id']
         assert doc.dataFile and doc.dataFile.id==expected
         d=adsk.fusion.Design.cast(app.activeProduct);root=d.rootComponent
+        for occ in root.occurrences:
+            for body in occ.component.bRepBodies:
+                selectable.append((body,body.isSelectable));body.isSelectable=False
         for occ in root.occurrences:saved.append((occ,occ.isLightBulbOn))
         for n in (0,2,3,4,5,6,7):root.occurrences.item(n).isLightBulbOn=True
         root.occurrences.item(1).isLightBulbOn=False
@@ -46,9 +52,10 @@ def run(context):
         for n in (0,2,4,6,7):
             name,eye,up=views[n];shot('Body_'+name,eye,up)
         report.update(complete=True,source_file=doc.dataFile.name,source_id=doc.dataFile.id,
-                      note='Current rejected dome shape, unmodified. Shaded CAD viewport images, not photorealistic renders. Joystick/boot are simplified engineering proxies.')
+                      note=settings.get('note','Current rejected dome shape, unmodified. Shaded CAD viewport images, not photorealistic renders. Joystick/boot are simplified engineering proxies.'))
     except Exception:report['error']=traceback.format_exc()
     finally:
+        for body,on in selectable:body.isSelectable=on
         for occ,on in saved:occ.isLightBulbOn=on
         vp.visualStyle=style;vp.camera=oldcam;vp.refresh()
         with open(os.path.join(OUT,'export_record.json'),'w') as f:json.dump(report,f,indent=2)

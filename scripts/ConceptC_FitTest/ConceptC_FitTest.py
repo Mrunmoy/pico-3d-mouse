@@ -15,7 +15,13 @@ def run(context):
             path=os.path.join(ROOT,'scripts','ConceptC_Complete','reference_views.py')
             spec=importlib.util.spec_from_file_location('reference_views',path)
             module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
-            module.run(context)
+            module.run(request)
+            return
+        if request.get('action')=='continuous':
+            path=os.path.join(ROOT,'scripts','ConceptC_Complete','continuous_revision.py')
+            spec=importlib.util.spec_from_file_location('continuous_revision',path)
+            module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+            module.run(request)
             return
         if request.get('action')=='ergonomic':
             path=os.path.join(ROOT,'scripts','ConceptC_Complete','ergonomic_revision.py')

@@ -7,13 +7,14 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'output' / 'NanoBanana_References'
 font = ImageFont.truetype('C:/Windows/Fonts/arial.ttf', 28)
 titlefont = ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf', 38)
+SUBTITLE='Current CAD reference | Dome to be redesigned | Views fitted individually'
 
 def sheet(files, name, title):
     rows = (len(files) + 2) // 3
     canvas = Image.new('RGB', (2400, rows * 650 + 140), 'white')
     draw = ImageDraw.Draw(canvas)
     draw.text((35, 20), title, font=titlefont, fill='#202a35')
-    draw.text((35, 75), 'Current CAD reference | Dome to be redesigned | Views fitted individually', font=font, fill='#56616c')
+    draw.text((35, 75), SUBTITLE, font=font, fill='#56616c')
     for i, path in enumerate(files):
         im = Image.open(path).convert('RGBA')
         bbox = im.getchannel('A').getbbox()
