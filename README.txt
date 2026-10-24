@@ -1,9 +1,14 @@
 SpaceMouse Concept C - local Fusion 360 engineering project
 
-CURRENT REVISION: R2, output/revision2 (build validation completed).
+CURRENT GEOMETRY: ergonomic upper revision, output/ergonomic.
+The original R2 cloud file identity/name is retained as the single master;
+the lower-palm revision is saved as a subsequent version of that file.
+Latest local master backup: output/ergonomic/SpaceMouse_Master.f3d.
+The output/revision2 archive remains the pre-ergonomic rebuild baseline.
+Use output/ergonomic/READ_ME.txt for current dimensions and part compatibility.
 Single cloud master: SpaceMouse project / SpaceMouse Concept C - Left Hand
 Recessed Mount R2. Verified saved version 1; extra Fusion tabs closed.
-Local master backup: output/revision2/ConceptC_Complete.f3d.
+Original R2 baseline backup: output/revision2/ConceptC_Complete.f3d.
 R1 is retained in output/complete for history; do not mix R1 and R2 print parts.
 User physical feedback on 25 October 2026 supersedes the original brief's
 handedness and joystick mounting arrangement.
