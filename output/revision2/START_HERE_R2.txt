@@ -1,0 +1,81 @@
+SPACE MOUSE - REVISION 2 - 25 OCTOBER 2026
+
+Use this revision2 folder. Do not mix its upper/bottom with R1 parts.
+
+EDITABLE CAD
+ConceptC_Complete.f3d: assembled native Fusion archive with timeline/parameters.
+ConceptC_Exploded.f3d: exploded presentation copy.
+ConceptC_Complete_Assembly.step: exchange geometry.
+These are saved locally. Fusion Personal's 10-editable-document cloud limit
+was already full; a new cloud document has not been claimed as saved.
+
+CHANGES FROM PRINT FEEDBACK
+1. Complete assembly mirrored to reverse the arrangement user rejected.
+   Front view has joystick on the left, palm platform on the right; USB is rear.
+   This explicitly supersedes the original brief's handedness coordinates.
+2. Ring/cushion outside diameter measured 53.46 mm; combined thickness 4.46 mm.
+   Top pocket diameter 54.00 mm (0.27 mm radial clearance), depth 4.46 mm.
+   Ring upper rim is flush at Z=42 mm; the flexible cushion retains its shape.
+   A 3 mm structural ledge sits below the stack. Existing 32.5 mm square screw
+   pitch and 2.8 mm clearances retained, with joystick flange below the ledge.
+3. Enclosure height raised from 39.5 to 42 mm to preserve approximately 4.04 mm
+   clearance between mechanism envelope and 3 mm bottom cover.
+4. Pico moved to rear centre: board rear edge Y=49.5 mm; reference connector
+   mouth Y=50.5 mm, close to the outer rear wall, rather than deep inside.
+   USB-end rails shortened for wall clearance. Board held by front stop,
+   side guides and removable screw-down bridge; USB end remains open.
+5. Fine upper mesh: 0.005 mm surface deviation, 1 mm maximum mesh edge.
+   No dimensional scaling or faceted replacement of the native CAD.
+
+PRINT ONLY THESE THREE FILES, ONE EACH, 100% MM SCALE
+Upper_Shell_print.stl
+Bottom_Cover_print.stl
+PCB_Retainer_print.stl
+The ring/cushion, joystick and PCB are existing hardware, not printed parts.
+
+UPPER PRINT SETUP
+Print open bottom rim DOWN, palm face UP; already oriented diagonally.
+Use 0.12 mm layers, 0.20 mm initial layer, 3 walls, 15% infill, internal tree
+supports and 5 mm outer brim. Remove supports through the open underside.
+The 167.63 x 163.86 mm model leaves room for the 5 mm brim on A1 mini.
+Do not flip palm-down: the outside fillet becomes an unsupported expanding
+overhang and can sag badly, as seen in the user's failed print.
+The brim increases adhesion area but cannot guarantee bed adhesion. Clean the
+plate and confirm a continuous attached first layer before leaving the print.
+Bottom: flat underside down, 0.20 mm layers, 2-3 walls, 15% infill, no support.
+Retainer: flat bridge face down, legs up, 0.20 mm layers, no support.
+
+ASSEMBLY AND FASTENERS
+Drop ring with seated cushion into top recess. Bring mechanism to the underside
+of the ledge and insert four M2.5 screws from above into the hardware flange.
+Stack through printed ledge and ring is 7.46 mm; select screw length for actual
+thread depth (10 mm gives nominal 2.54 mm engagement). The CAD screw envelope
+is illustrative; do not blindly use a longer screw that bottoms in hardware.
+Cover: four M3 x 10 countersunk screws into 2.5 mm plastic pilots.
+Retainer: two M2.5 x 12 pan-head screws into 2 mm plastic pilots. Tighten gently.
+Four approximately 12 mm adhesive feet, small cable tie for the harness anchor.
+Solder PCB on bench; locate USB at rear; route wires clear of mechanism and lip.
+Bridge pressure shoes must bear only on clear PCB edges, not solder pads.
+
+VERIFICATION
+Native build recomputes without feature warnings. Checked enclosure/board/
+joystick/ring envelopes have no detected solid interference. Three print meshes
+are watertight with positive volume. See validation_report.json/mesh_checks.json.
+Native references simplify boot, connector and potentiometer details. Full
+joystick deflection, solder-joint heights, actual thread engagement and printed
+ring fit still require physical verification. Measured ring dimensions and
+previously tested hole positions are retained as editable parameters.
+
+SOURCE / REBUILD
+scripts/ConceptC_Complete/ConceptC_R2.py is the authoritative R2 builder.
+Run in Fusion through the registered ConceptC_FitTest dispatch with a queued
+{"revision":"R2"} request, or register the R2 script with matching filename.
+Source dimensions are pre-mirror; final mirror features reverse X in every
+component, preserving editable history. Original R1 files remain for history.
+No R2 print job has been sent.
+
+SLICER CHECK, 25 OCTOBER 2026
+Upper_Shell_print.3mf saves the verified upper settings above. Bambu Studio
+completed slicing with no displayed warning: 8h48m total, 140.78 g including
+39.56 g support. Bottom cover sliced at 0.20 mm with no displayed warning:
+1h08m total, 43.63 g. These are estimates, not completed prints.

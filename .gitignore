@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+scripts/**/queued.json*
+output/**/*.request*
+output/**/build_error.txt
+output/**/smooth_error.txt
+output/**/previous_upper_export/
+output/**/*.ok
+# Large delivery ZIPs are regenerated from tracked CAD, meshes and source.
+output/*.zip
+# Personal source photographs are not included in the engineering repository.
+*.jpg
+*.jpeg
+Gemini_Generated_Render.jpg
