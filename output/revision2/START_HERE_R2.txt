@@ -6,8 +6,12 @@ EDITABLE CAD
 ConceptC_Complete.f3d: assembled native Fusion archive with timeline/parameters.
 ConceptC_Exploded.f3d: exploded presentation copy.
 ConceptC_Complete_Assembly.step: exchange geometry.
-These are saved locally. Fusion Personal's 10-editable-document cloud limit
-was already full; a new cloud document has not been claimed as saved.
+Single Fusion cloud master verified in project SpaceMouse:
+SpaceMouse Concept C - Left Hand Recessed Mount R2, version 1.
+All parts are editable components within that master; extra scratch tabs closed.
+ConceptC_Complete.f3d is its refreshed local backup. Other local exports are
+delivery/presentation artifacts, not additional cloud master designs.
+See master_save_record.json for the verified project and document identity.
 
 CHANGES FROM PRINT FEEDBACK
 1. Complete assembly mirrored to reverse the arrangement user rejected.

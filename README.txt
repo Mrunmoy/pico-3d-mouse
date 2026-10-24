@@ -1,6 +1,9 @@
 SpaceMouse Concept C - local Fusion 360 engineering project
 
 CURRENT REVISION: R2, output/revision2 (build validation completed).
+Single cloud master: SpaceMouse project / SpaceMouse Concept C - Left Hand
+Recessed Mount R2. Verified saved version 1; extra Fusion tabs closed.
+Local master backup: output/revision2/ConceptC_Complete.f3d.
 R1 is retained in output/complete for history; do not mix R1 and R2 print parts.
 User physical feedback on 25 October 2026 supersedes the original brief's
 handedness and joystick mounting arrangement.

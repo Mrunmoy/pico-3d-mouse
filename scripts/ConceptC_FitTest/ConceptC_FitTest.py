@@ -11,7 +11,7 @@ def run(context):
         import importlib.util
         with open(complete_request,encoding='utf-8-sig') as f: request=json.load(f)
         os.replace(complete_request,complete_request+'.started')
-        filename='ConceptC_R2.py' if request.get('revision')=='R2' else 'ConceptC_Complete.py'
+        filename='finalize_master.py' if request.get('action')=='finalize_master' else ('ConceptC_R2.py' if request.get('revision')=='R2' else 'ConceptC_Complete.py')
         path=os.path.join(ROOT,'scripts','ConceptC_Complete',filename)
         spec=importlib.util.spec_from_file_location('ConceptC_Complete',path)
         module=importlib.util.module_from_spec(spec)
