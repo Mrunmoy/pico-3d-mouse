@@ -1,0 +1,32 @@
+{
+  "deleted": [
+    {
+      "id": "urn:adsk.wipprod:dm.lineage:A1cjmLz4T1e55rKJDkAb1A",
+      "name": "Concept C - Palm Support Plus 25 mm",
+      "project": "Default Project",
+      "folder": "Default Project"
+    },
+    {
+      "id": "urn:adsk.wipprod:dm.lineage:_bAFNLHSQKy4GBCRFqBDOA",
+      "name": "ConceptC_GripTest",
+      "project": "Default Project",
+      "folder": "Default Project"
+    },
+    {
+      "id": "urn:adsk.wipprod:dm.lineage:OMVQBqVRRcSSjZ5wRgcSLA",
+      "name": "SpaceMouse Concept C - Complete Prototype",
+      "project": "Default Project",
+      "folder": "Default Project"
+    },
+    {
+      "id": "urn:adsk.wipprod:dm.lineage:MCCVY1vLRla2ssKW3oDCww",
+      "name": "SpaceMouse Concept C - Complete Prototype R1",
+      "project": "Default Project",
+      "folder": "Default Project"
+    }
+  ],
+  "errors": [],
+  "master_preserved": "urn:adsk.wipprod:dm.lineage:BfuyUQ4XTJGKQyfE52KnBw",
+  "post_deletion_verified": true,
+  "deskmate_files_preserved": 5
+}
