@@ -11,6 +11,12 @@ def run(context):
         import importlib.util
         with open(complete_request,encoding='utf-8-sig') as f: request=json.load(f)
         os.replace(complete_request,complete_request+'.started')
+        if request.get('action')=='reference_views':
+            path=os.path.join(ROOT,'scripts','ConceptC_Complete','reference_views.py')
+            spec=importlib.util.spec_from_file_location('reference_views',path)
+            module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+            module.run(context)
+            return
         if request.get('action')=='ergonomic':
             path=os.path.join(ROOT,'scripts','ConceptC_Complete','ergonomic_revision.py')
             spec=importlib.util.spec_from_file_location('ergonomic_revision',path)
