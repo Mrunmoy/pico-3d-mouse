@@ -11,6 +11,12 @@ def run(context):
         import importlib.util
         with open(complete_request,encoding='utf-8-sig') as f: request=json.load(f)
         os.replace(complete_request,complete_request+'.started')
+        if request.get('action')=='split_concept':
+            path=os.path.join(ROOT,'scripts','ConceptC_Complete','split_concept.py')
+            spec=importlib.util.spec_from_file_location('split_concept',path)
+            module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+            module.run(request)
+            return
         if request.get('action')=='tpu_feet':
             path=os.path.join(ROOT,'scripts','ConceptC_Complete','tpu_feet.py')
             spec=importlib.util.spec_from_file_location('tpu_feet',path)
