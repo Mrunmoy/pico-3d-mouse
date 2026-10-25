@@ -1,0 +1,24 @@
+{
+  "warnings": [],
+  "parts": [
+    {
+      "name": "Base_Tray",
+      "volume_cm3": 79.98293652005664
+    },
+    {
+      "name": "Palm_Cap",
+      "volume_cm3": 119.25747970347783
+    }
+  ],
+  "minimum_new_post_to_joystick_envelope_clearance_mm": 31.5,
+  "interference": [],
+  "cloud_saved": true,
+  "cloud_version": 2,
+  "complete": true,
+  "cloud_name": "SpaceMouse - Split Shell Concept - Review",
+  "cloud_id": "urn:adsk.wipprod:dm.lineage:Oa1GpTwQR8iVvi6D4SRQIg",
+  "screws": "4 x M3 x 25 mm ISO10642 90deg countersunk",
+  "inserts": "4 x ruthex RX-M3Sx4.0, OD 4.6 mm, L 4.0 mm",
+  "thread_engagement_mm": 3.2,
+  "print_sent": false
+}
