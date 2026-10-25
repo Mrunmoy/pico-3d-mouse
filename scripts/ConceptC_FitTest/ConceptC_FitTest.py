@@ -17,6 +17,12 @@ def run(context):
             module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
             module.run(request)
             return
+        if request.get('action')=='asymmetric':
+            path=os.path.join(ROOT,'scripts','ConceptC_Complete','asymmetric_revision.py')
+            spec=importlib.util.spec_from_file_location('asymmetric_revision',path)
+            module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+            module.run(request)
+            return
         if request.get('action')=='rounded':
             path=os.path.join(ROOT,'scripts','ConceptC_Complete','rounded_revision.py')
             spec=importlib.util.spec_from_file_location('rounded_revision',path)
