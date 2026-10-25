@@ -1,0 +1,41 @@
+[
+  {
+    "part": "Upper_Shell",
+    "triangles": 1067360,
+    "watertight": true,
+    "extent_mm": [
+      158.42537077086234,
+      155.27297262273052,
+      39.0
+    ],
+    "volume_mm3": 69681.32801643915,
+    "orientation": "open rim down / palm up / diagonal; internal supports required",
+    "file": "D:\\github\\fusion360\\space-mouse\\output\\rounded\\Upper_Shell_print.stl"
+  },
+  {
+    "part": "Bottom_Cover",
+    "triangles": 4048,
+    "watertight": true,
+    "extent_mm": [
+      157.73245904825427,
+      154.50656219111605,
+      10.300000190734863
+    ],
+    "volume_mm3": 47848.878314969304,
+    "orientation": "flat underside down / diagonal",
+    "file": "D:\\github\\fusion360\\space-mouse\\output\\rounded\\Bottom_Cover_print.stl"
+  },
+  {
+    "part": "PCB_Retainer",
+    "triangles": 500,
+    "watertight": true,
+    "extent_mm": [
+      34.599998474121094,
+      5.0,
+      8.899999618530273
+    ],
+    "volume_mm3": 718.8285107351345,
+    "orientation": "flat bridge face down",
+    "file": "D:\\github\\fusion360\\space-mouse\\output\\rounded\\PCB_Retainer_print.stl"
+  }
+]

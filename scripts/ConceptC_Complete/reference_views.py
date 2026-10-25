@@ -14,7 +14,7 @@ def run(context):
     try:
         doc=app.activeDocument
         expected=json.load(open(os.path.join(ROOT,'output','revision2','master_save_record.json')))['data_file_id']
-        assert doc.dataFile and doc.dataFile.id==expected
+        assert (doc.dataFile and doc.dataFile.id==expected) or (settings.get('allow_trial') and doc.name.startswith('Ergonomic trial'))
         d=adsk.fusion.Design.cast(app.activeProduct);root=d.rootComponent
         for occ in root.occurrences:
             for body in occ.component.bRepBodies:
@@ -51,7 +51,7 @@ def run(context):
         for n in (3,4,5,6,7):root.occurrences.item(n).isLightBulbOn=False
         for n in (0,2,4,6,7):
             name,eye,up=views[n];shot('Body_'+name,eye,up)
-        report.update(complete=True,source_file=doc.dataFile.name,source_id=doc.dataFile.id,
+        report.update(complete=True,source_file=doc.dataFile.name if doc.dataFile else doc.name,source_id=doc.dataFile.id if doc.dataFile else None,
                       note=settings.get('note','Current rejected dome shape, unmodified. Shaded CAD viewport images, not photorealistic renders. Joystick/boot are simplified engineering proxies.'))
     except Exception:report['error']=traceback.format_exc()
     finally:
