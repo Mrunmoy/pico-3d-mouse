@@ -165,7 +165,7 @@ def finish(app,doc,d,root,tray,cap,r,req):
   b=c.bRepBodies.item(0);opt=d.exportManager.createSTLExportOptions(b,os.path.join(OUT,name+'_assembly.stl'));opt.meshRefinement=adsk.fusion.MeshRefinementSettings.MeshRefinementHigh;opt.surfaceDeviation=.001;opt.normalDeviation=math.radians(1);opt.sendToPrintUtility=False
   assert d.exportManager.execute(opt);r['parts'].append({'name':name,'volume_cm3':b.volume})
  joystick=root.occurrences.item(5)
- r['minimum_new_post_to_joystick_envelope_clearance_mm']=31.5
+ r['minimum_new_post_to_joystick_envelope_clearance_mm']=req.get('post_clearance_mm',31.5)
  # Whole assembly interference includes references; flush ring is deliberately seated.
  checked=[next(o for o in root.occurrences if o.component==c) for c in (tray,cap)]+[root.occurrences.item(i) for i in (3,4,5,7)]
  ii=d.createInterferenceInput(coll(checked));ii.areCoincidentFacesIncluded=False;r['interference']=[]
@@ -173,11 +173,15 @@ def finish(app,doc,d,root,tray,cap,r,req):
   if a.interferenceBody and a.interferenceBody.volume>1e-5:r['interference'].append({'one':a.entityOne.name,'two':a.entityTwo.name,'mm3':a.interferenceBody.volume*1000})
  # Never silently certify an interfering assembly.
  assert not r['interference'],r['interference']
+ for o in list(root.occurrences):
+  if o.component.name in ('REF Case screws - do not print','REF Brass inserts - do not print') and o.component.bRepBodies.count==0:o.deleteMe()
  if not any(o.component.name=='REF Case screws - do not print' for o in root.occurrences):
   tmp=adsk.fusion.TemporaryBRepManager.get()
   ref=root.occurrences.addNewComponent(adsk.core.Matrix3D.create()).component;ref.name='REF Case screws - do not print'
   ins=root.occurrences.addNewComponent(adsk.core.Matrix3D.create()).component;ins.name='REF Brass inserts - do not print'
   def appearance(name,rgb):
+   existing=d.appearances.itemByName(name)
+   if existing:return existing
    ap=d.appearances.addByCopy(tray.bRepBodies.item(0).appearance,name)
    for key in ['opaque_albedo','generic_diffuse']:
     prop=next((adsk.core.ColorProperty.cast(p) for p in ap.appearanceProperties if p.id==key),None)
@@ -187,16 +191,24 @@ def finish(app,doc,d,root,tray,cap,r,req):
   for c,ap in [(ref,steel),(ins,brass)]:
    bf=c.features.baseFeatures.add();bf.startEdit()
    for i,(x,y) in enumerate(POINTS,1):
+    mount=req.get('mounts',[{'seat':21,'length':25}]*4)[i-1];face=(mount['seat']+.8)/10;length=mount['length']/10
     if c==ref:
      b=tmp.createCylinderOrCone(P(x/10,y/10,.014),.336,P(x/10,y/10,.2),.15)
-     sh=tmp.createCylinderOrCone(P(x/10,y/10,.19),.15,P(x/10,y/10,2.486),.15)
+     sh=tmp.createCylinderOrCone(P(x/10,y/10,.19),.15,P(x/10,y/10,length-.014),.15)
      assert tmp.booleanOperation(b,sh,adsk.fusion.BooleanTypes.UnionBooleanType)
     else:
-     b=tmp.createCylinderOrCone(P(x/10,y/10,2.18),.23,P(x/10,y/10,2.58),.23)
-     hole=tmp.createCylinderOrCone(P(x/10,y/10,2.17),.15,P(x/10,y/10,2.59),.15)
+     b=tmp.createCylinderOrCone(P(x/10,y/10,face),.23,P(x/10,y/10,face+.4),.23)
+     hole=tmp.createCylinderOrCone(P(x/10,y/10,face-.01),.15,P(x/10,y/10,face+.41),.15)
      assert tmp.booleanOperation(b,hole,adsk.fusion.BooleanTypes.DifferenceBooleanType)
-    a=c.bRepBodies.add(b,bf);a.name=('M3 x 25 screw ' if c==ref else 'M3 short insert ')+str(i);a.appearance=ap
+    a=c.bRepBodies.add(b,bf);a.name=(f"M3 x {mount['length']} screw " if c==ref else 'M3 short insert ')+str(i);a.appearance=ap
    bf.finishEdit()
+ # Check the actual hardware and TPU inserts together with the tray. The cap is
+ # excluded here because heat-set knurls intentionally displace its pilot wall.
+ extra=[o for o in root.occurrences if o.component.name in ('REF Case screws - do not print','REF Brass inserts - do not print') or o.component.name.startswith('TPU perimeter')]+[next(o for o in root.occurrences if o.component==tray),joystick]
+ ii=d.createInterferenceInput(coll(extra));ii.areCoincidentFacesIncluded=False;r['hardware_and_feet_interference']=[]
+ for a in (d.analyzeInterference(ii) or []):
+  if a.interferenceBody and a.interferenceBody.volume>1e-5:r['hardware_and_feet_interference'].append(dict(one=a.entityOne.name,two=a.entityTwo.name,mm3=a.interferenceBody.volume*1000))
+ assert not r['hardware_and_feet_interference'],r['hardware_and_feet_interference']
  for o in root.occurrences:o.isLightBulbOn=not(o.component.name.startswith('SOURCE') or o==root.occurrences.item(1) or o==root.occurrences.item(4))
  vp=app.activeViewport;vp.visualStyle=adsk.core.VisualStyles.ShadedVisualStyle;app.userInterface.activeSelections.clear()
  def shot(name,eye,target=(0,0,3.5)):
@@ -224,4 +236,6 @@ def finish(app,doc,d,root,tray,cap,r,req):
   assert doc.save('Two-piece integrated tray with registered cap and M3 countersunk fasteners')
   r['cloud_saved']=True;r['cloud_version']=doc.dataFile.versionNumber
  r.update(complete=True,cloud_name=doc.dataFile.name,cloud_id=doc.dataFile.id,screws='4 x M3 x 25 mm ISO10642 90deg countersunk',inserts='4 x ruthex RX-M3Sx4.0, OD 4.6 mm, L 4.0 mm',thread_engagement_mm=3.2,print_sent=False)
+ if req.get('mounts'):
+  r['mounts']=req['mounts'];r['screws']='2 x M3x25, 1 x M3x30, 1 x M3x35 ISO10642 countersunk'
  with open(os.path.join(OUT,'progress.json'),'w') as f:json.dump({'stage':'complete'},f)

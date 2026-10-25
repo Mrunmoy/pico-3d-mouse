@@ -3,22 +3,50 @@
   "parts": [
     {
       "name": "Base_Tray",
-      "volume_cm3": 79.98293652005664
+      "volume_cm3": 80.9521733897917
     },
     {
       "name": "Palm_Cap",
-      "volume_cm3": 119.25747970347783
+      "volume_cm3": 119.06614736669087
     }
   ],
-  "minimum_new_post_to_joystick_envelope_clearance_mm": 31.5,
+  "minimum_new_post_to_joystick_envelope_clearance_mm": 3.0,
   "interference": [],
+  "hardware_and_feet_interference": [],
   "cloud_saved": true,
-  "cloud_version": 2,
+  "cloud_version": 3,
   "complete": true,
   "cloud_name": "SpaceMouse - Split Shell Concept - Review",
   "cloud_id": "urn:adsk.wipprod:dm.lineage:Oa1GpTwQR8iVvi6D4SRQIg",
-  "screws": "4 x M3 x 25 mm ISO10642 90deg countersunk",
+  "screws": "2 x M3x25, 1 x M3x30, 1 x M3x35 ISO10642 countersunk",
   "inserts": "4 x ruthex RX-M3Sx4.0, OD 4.6 mm, L 4.0 mm",
   "thread_engagement_mm": 3.2,
-  "print_sent": false
+  "print_sent": false,
+  "mounts": [
+    {
+      "x": -28,
+      "y": -26,
+      "seat": 26,
+      "length": 30
+    },
+    {
+      "x": -23.5,
+      "y": 41,
+      "seat": 31,
+      "length": 35
+    },
+    {
+      "x": 37,
+      "y": 30,
+      "seat": 21,
+      "length": 25
+    },
+    {
+      "x": 37,
+      "y": -10,
+      "seat": 21,
+      "length": 25
+    }
+  ],
+  "distribution": "Two joystick-side fixings, two palm-side fixings; front and rear widely separated"
 }

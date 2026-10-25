@@ -2,27 +2,27 @@
   {
     "name": "Base_Tray",
     "watertight": true,
-    "triangles": 488474,
+    "triangles": 456242,
     "size_mm": [
-      158.95785203190025,
-      155.14269098201194,
-      35.05347442626953
+      158.9581676275019,
+      155.14265591583398,
+      35.05233383178711
     ],
-    "volume_mm3": 79984.22321399105,
-    "bed_contact_area_mm2": 13535.290842441162,
-    "downward_overhang_area_above_first_layer_mm2": 2424.0212696898784
+    "volume_mm3": 80803.53635123635,
+    "bed_contact_area_mm2": 13535.31494591183,
+    "downward_overhang_area_above_first_layer_mm2": 2422.707765987989
   },
   {
     "name": "Palm_Cap",
     "watertight": true,
-    "triangles": 405102,
+    "triangles": 406542,
     "size_mm": [
       153.99313344539343,
       144.91622882442562,
       19.39966496413738
     ],
-    "volume_mm3": 119244.22001936812,
-    "bed_contact_area_mm2": 10440.580158857912,
-    "downward_overhang_area_above_first_layer_mm2": 1575.3765562815204
+    "volume_mm3": 119052.89800425807,
+    "bed_contact_area_mm2": 10432.584299119011,
+    "downward_overhang_area_above_first_layer_mm2": 1582.569427605233
   }
 ]

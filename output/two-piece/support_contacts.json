@@ -1,0 +1,19 @@
+{
+  "interface_points": 585,
+  "assembly_bounds_mm": [
+    [
+      -61.51139092388419,
+      -14.232182335896537,
+      21.283981172542546
+    ],
+    [
+      40.347128319561556,
+      43.554879961370595,
+      34.46268651537001
+    ]
+  ],
+  "joystick_cavity_points": 478,
+  "fixing_pocket_points": 107,
+  "unclassified_points": 0,
+  "unclassified_bounds_mm": null
+}
