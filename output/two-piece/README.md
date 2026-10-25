@@ -1,6 +1,6 @@
 # SpaceMouse two-piece enclosure
 
-This revision replaces the three-piece construction in the existing **SpaceMouse - Split Shell Concept - Review** document in the SpaceMouse project. The separate original R2 master remains unchanged. `SpaceMouse_TwoPiece.f3d` is the native local backup of this revision.
+This revision replaces the three-piece construction in the existing **SpaceMouse - Split Shell Concept - Review** document in the SpaceMouse project. This is now the only Fusion document in the SpaceMouse project; the obsolete R2 cloud file was removed on 26 October 2026. Earlier native archives remain recoverable from local Git history. `SpaceMouse_TwoPiece.f3d` is the native local backup of this revision.
 
 ## Parts and assembly
 
@@ -38,7 +38,7 @@ Bambu Studio 02.08.02.61 sliced both final parts for the A1 mini 0.4 mm nozzle, 
 
 Both recommended projects use automatic tree supports and finish slicing without warnings. Support adds approximately 0.72 g to the tray and 2.93 g to the cap. Cap support-interface coordinates were checked: all lie inside the joystick cavity or fixing pockets, with none on the exterior palm surface. The cap prints curved surface upward. The no-support audits flag a tray cantilever and cap floating regions, so this design is not qualified as fully support-free. Those audit files are not the recommended print projects. See `slicer_audit.json` and `support_contacts.json` for results.
 
-Assembly interference and separate hardware/TPU-foot interference checks pass. The native Fusion concept was saved as cloud version 3 and backed up locally. Physical fit, screw strength and bed adhesion have not yet been validated on this revision. No print job was sent.
+Assembly interference and separate hardware/TPU-foot interference checks pass. The native Fusion concept was saved as cloud version 4 and backed up locally. Physical fit, screw strength and bed adhesion have not yet been validated on this revision. No print job was sent.
 
 Fastener locations (assembly XY, mm) and lengths:
 

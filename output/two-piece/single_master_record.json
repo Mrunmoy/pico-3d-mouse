@@ -1,0 +1,19 @@
+{
+  "preserved_id": "urn:adsk.wipprod:dm.lineage:Oa1GpTwQR8iVvi6D4SRQIg",
+  "deleted": [
+    {
+      "id": "urn:adsk.wipprod:dm.lineage:BfuyUQ4XTJGKQyfE52KnBw",
+      "name": "SpaceMouse Concept C - Left Hand Recessed Mount R2"
+    }
+  ],
+  "name": "SpaceMouse - Split Shell Concept - Review",
+  "version": 4,
+  "local_archive": "D:\\github\\fusion360\\space-mouse\\output\\two-piece\\SpaceMouse_TwoPiece.f3d",
+  "remaining": [
+    {
+      "id": "urn:adsk.wipprod:dm.lineage:Oa1GpTwQR8iVvi6D4SRQIg",
+      "name": "SpaceMouse - Split Shell Concept - Review"
+    }
+  ],
+  "complete": true
+}
