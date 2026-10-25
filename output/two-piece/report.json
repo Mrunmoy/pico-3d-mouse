@@ -1,20 +1,40 @@
 {
+  "joystick_bodies": [
+    {
+      "name": "Body3",
+      "min": [
+        1.7999999999999998,
+        -1.8500000000000003,
+        0.7039999999999993
+      ],
+      "max": [
+        7.1000000000000005,
+        3.45,
+        9.104
+      ]
+    }
+  ],
+  "handedness": "LEFT hand: wrist at -Y, USB at +Y, joystick at +X",
+  "joystick_centre_x_mm": 44.5,
+  "joint_normal": [
+    -0.14,
+    -0.04,
+    1
+  ],
   "warnings": [],
   "parts": [
     {
       "name": "Base_Tray",
-      "volume_cm3": 80.9521733897917
+      "volume_cm3": 80.9521733897919
     },
     {
       "name": "Palm_Cap",
-      "volume_cm3": 119.06614736669087
+      "volume_cm3": 119.06614736669084
     }
   ],
-  "minimum_new_post_to_joystick_envelope_clearance_mm": 3.0,
+  "minimum_new_post_to_joystick_envelope_clearance_mm": 3,
   "interference": [],
   "hardware_and_feet_interference": [],
-  "cloud_saved": true,
-  "cloud_version": 3,
   "complete": true,
   "cloud_name": "SpaceMouse - Split Shell Concept - Review",
   "cloud_id": "urn:adsk.wipprod:dm.lineage:Oa1GpTwQR8iVvi6D4SRQIg",
@@ -24,29 +44,30 @@
   "print_sent": false,
   "mounts": [
     {
-      "x": -28,
+      "x": 28,
       "y": -26,
       "seat": 26,
       "length": 30
     },
     {
-      "x": -23.5,
+      "x": 23.5,
       "y": 41,
       "seat": 31,
       "length": 35
     },
     {
-      "x": 37,
+      "x": -37,
       "y": 30,
       "seat": 21,
       "length": 25
     },
     {
-      "x": 37,
+      "x": -37,
       "y": -10,
       "seat": 21,
       "length": 25
     }
   ],
-  "distribution": "Two joystick-side fixings, two palm-side fixings; front and rear widely separated"
+  "cloud_saved": true,
+  "cloud_version": 5
 }

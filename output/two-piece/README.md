@@ -2,6 +2,10 @@
 
 This revision replaces the three-piece construction in the existing **SpaceMouse - Split Shell Concept - Review** document in the SpaceMouse project. This is now the only Fusion document in the SpaceMouse project; the obsolete R2 cloud file was removed on 26 October 2026. Earlier native archives remain recoverable from local Git history. `SpaceMouse_TwoPiece.f3d` is the native local backup of this revision.
 
+## Handedness
+
+Corrected on 26 October 2026: with the wrist edge nearest you (-Y) and USB behind (+Y), the joystick is on the RIGHT (+X, centre X=44.5 mm) and palm support extends LEFT. The native timeline contains mirror features across YZ for the current enclosure and accessories. `Left_hand_top.png` shows this orientation. Current STL and PRINT 3MF files replace the incorrect earlier exports; do not reuse earlier printed enclosure parts for this mirrored assembly.
+
 ## Parts and assembly
 
 The two main enclosure parts are `Base_Tray_print.stl` and `Palm_Cap_print.stl`. The bottom, curved sidewalls and Pico cradle are a single tray. Reuse the existing small PCB retainer and four TPU strips; those are additional small printed accessories, not enclosure sections. Do not print source-history or hardware reference components.
@@ -33,21 +37,21 @@ Bambu Studio 02.08.02.61 sliced both final parts for the A1 mini 0.4 mm nozzle, 
 
 | File | Estimated total time | Filament |
 |---|---:|---:|
-| `PRINT_Base_Tray_A1mini.3mf` | 4 h 24 min | 74.95 g |
-| `PRINT_Palm_Cap_A1mini.3mf` | 4 h 05 min | 53.55 g |
+| `PRINT_Base_Tray_A1mini.3mf` | 4 h 25 min | 74.89 g |
+| `PRINT_Palm_Cap_A1mini.3mf` | 4 h 05 min | 53.53 g |
 
-Both recommended projects use automatic tree supports and finish slicing without warnings. Support adds approximately 0.72 g to the tray and 2.93 g to the cap. Cap support-interface coordinates were checked: all lie inside the joystick cavity or fixing pockets, with none on the exterior palm surface. The cap prints curved surface upward. The no-support audits flag a tray cantilever and cap floating regions, so this design is not qualified as fully support-free. Those audit files are not the recommended print projects. See `slicer_audit.json` and `support_contacts.json` for results.
+Both recommended projects use automatic tree supports and finish slicing without warnings. Support adds approximately 0.71 g to the tray and 2.93 g to the cap. Cap support-interface coordinates were checked: all lie inside the joystick cavity or fixing pockets, with none on the exterior palm surface. The cap prints curved surface upward. The no-support audits flag a tray cantilever and cap floating regions, so this design is not qualified as fully support-free. Those audit files are not the recommended print projects. See `slicer_audit.json` and `support_contacts.json` for results.
 
-Assembly interference and separate hardware/TPU-foot interference checks pass. The native Fusion concept was saved as cloud version 4 and backed up locally. Physical fit, screw strength and bed adhesion have not yet been validated on this revision. No print job was sent.
+Assembly interference and separate hardware/TPU-foot interference checks pass. The native Fusion concept was saved as cloud version 5 and backed up locally. Physical fit, screw strength and bed adhesion have not yet been validated on this revision. No print job was sent.
 
 Fastener locations (assembly XY, mm) and lengths:
 
 | Fixing | X | Y | Shoulder Z | Screw length |
 |---|---:|---:|---:|---:|
-| Joystick/front | -28 | -26 | 26 | 30 |
-| Joystick/rear | -23.5 | 41 | 31 | 35 |
-| Palm/rear | 37 | 30 | 21 | 25 |
-| Palm/front | 37 | -10 | 21 | 25 |
+| Joystick/front | 28 | -26 | 26 | 30 |
+| Joystick/rear | 23.5 | 41 | 31 | 35 |
+| Palm/rear | -37 | 30 | 21 | 25 |
+| Palm/front | -37 | -10 | 21 | 25 |
 
 
 The source exterior remains a preserved native BRep derived from the earlier parametric loft. New fastener diameters, clearances, seating and insert depths are editable parameters/features. Altering the exterior envelope or compound joint plane requires regeneration of the derived geometry. Hidden SOURCE components retain earlier history; only the two named final enclosure components are exported.

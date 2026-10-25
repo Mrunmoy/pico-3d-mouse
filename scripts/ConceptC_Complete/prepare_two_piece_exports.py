@@ -10,7 +10,7 @@ for part in report['parts']:
  name=part['name'];data=bytearray((OUT/(name+'_assembly.stl')).read_bytes());count=struct.unpack_from('<I',data,80)[0]
  dtype=np.dtype([('normal','<f4',3),('vertices','<f4',(3,3)),('attr','<u2')]);records=np.frombuffer(data,dtype=dtype,offset=84);tri=records['vertices'].astype(float)
  if name=='Palm_Cap':
-  normal=np.array([.14,-.04,1]);normal/=np.linalg.norm(normal);ex=np.array([1,0,-.14]);ex/=np.linalg.norm(ex);ey=np.cross(normal,ex)
+  normal=np.array(report.get('joint_normal',[.14,-.04,1]));ex=np.array([1,0,-normal[0]]);normal/=np.linalg.norm(normal);ex/=np.linalg.norm(ex);ey=np.cross(normal,ex)
   tri=tri@np.array([ex,ey,normal]).T
  a=math.pi/4;tri[:,:,:2]=tri[:,:,:2]@np.array([[math.cos(a),-math.sin(a)],[math.sin(a),math.cos(a)]]).T
  lo=tri.min((0,1));hi=tri.max((0,1));size=hi-lo;assert max(size[:2])<170,size
