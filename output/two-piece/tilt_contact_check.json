@@ -1,0 +1,14 @@
+[
+  {
+    "tilt_deg": 0,
+    "triangles_wholly_in_first_0p2_mm_area": 10471.633177237436
+  },
+  {
+    "tilt_deg": 5,
+    "triangles_wholly_in_first_0p2_mm_area": 0.5837428985238771
+  },
+  {
+    "tilt_deg": 10,
+    "triangles_wholly_in_first_0p2_mm_area": 0.33994507832667176
+  }
+]

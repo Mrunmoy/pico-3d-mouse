@@ -74,3 +74,6 @@ The source exterior remains a preserved native BRep derived from the earlier par
 Selected 3DZWMAN M3 x L4 x D4.2 (ASIN B0BBSLL6G7). The cap pilot is now 3.8 mm diameter, an engineering starting fit based on the listing drawing (4.2 mm knurl OD and approximately 3.675-3.75 mm core). This is not a published manufacturer pilot recommendation. Actual heat-set retention remains to be tested with the purchased inserts. Pocket depth stays 4.8 mm, with 0.8 mm nominal end relief; bottom tray, screw locations and lengths stay unchanged. Inserts are installed flush, without forcing them cold into the holes.
 
 
+
+Combined cap and PCB clamp plate: PRINT_Top_and_PCB_Retainer_A1mini.3mf, saved from Bambu Studio with separated brims, 0.12 mm layers, 4 h 11 min / 54.32 g. PCB_Retainer_print.stl is the earlier retainer reflected in X to match the corrected assembly and kept bridge-face down. Cap remains flat compound joint face down. A geometric 5/10 degree tilt check shows loss of broad direct bed contact; tilted printing was not selected. No job sent.
+
