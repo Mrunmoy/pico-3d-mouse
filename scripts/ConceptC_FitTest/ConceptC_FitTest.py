@@ -11,6 +11,12 @@ def run(context):
         import importlib.util
         with open(complete_request,encoding='utf-8-sig') as f: request=json.load(f)
         os.replace(complete_request,complete_request+'.started')
+        if request.get('action')=='long_inserts':
+            path=os.path.join(ROOT,'scripts','ConceptC_Complete','long_inserts.py')
+            spec=importlib.util.spec_from_file_location('long_inserts',path)
+            module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+            module.run(request)
+            return
         if request.get('action')=='correct_handedness':
             path=os.path.join(ROOT,'scripts','ConceptC_Complete','correct_handedness.py')
             spec=importlib.util.spec_from_file_location('correct_handedness',path)

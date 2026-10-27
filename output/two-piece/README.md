@@ -14,6 +14,10 @@ Four integral tray columns are distributed across the joystick and palm sides, w
 
 Install four heat-set inserts into the cap underside, each flush with its recessed pilot mouth 0.8 mm above its corresponding shoulder. Mount the joystick to the cap and install the Pico and retainer in the tray. Connect the wiring, lower the cap vertically onto the four locating collars, and tighten the four case screws evenly from the underside. Keep wiring off the seating shoulders. Do not use the screws to force a misaligned cap into place.
 
+## Insert compatibility checked 28 October 2026
+
+The user-owned M3 inserts (4.6 mm OD, 5.7 mm length) cannot be installed flush in the current low palm-side cap fixing without breaking through its exterior. Trial 6.0 and 6.3 mm pockets were rejected by solid-containment checks; the native master was restored to the 4.8 mm pilot depth for 4.0 mm-long inserts. Existing print files retain that valid geometry. The already printed bottom requires no change. Using the longer inserts requires a separate cap exterior/thickness redesign.
+
 ## Case hardware to order
 
 | Quantity | Item |
