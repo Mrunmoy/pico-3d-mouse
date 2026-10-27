@@ -25,11 +25,11 @@ The user-owned M3 inserts (4.6 mm OD, 5.7 mm length) cannot be installed flush i
 | 2 | M3 x 25 mm ISO 10642 socket countersunk screw, 90 degrees, 0.5 mm pitch |
 | 1 | M3 x 30 mm ISO 10642 socket countersunk screw, 90 degrees |
 | 1 | M3 x 35 mm ISO 10642 socket countersunk screw, 90 degrees |
-| 4 (plus spares) | ruthex RX-M3Sx4.0 short M3 brass heat-set insert, 4.6 mm outside diameter, 4.0 mm length |
+| 4 (plus spares) | 3DZWMAN M3 x L4 x D4.2 brass heat-set insert, Amazon AU B0BBSLL6G7 |
 
-The CAD uses a 7.0 mm countersink mouth, 3.4 mm through clearance, and 4.0 mm insert pilot with 4.8 mm depth. Countersunk screw length includes the head. Nominal screw penetration into the insert is 3.2 mm; allowing the approximately 0.14 mm head recess gives about 3.1 mm engagement. Screw ends remain inside the insert, clear of the plastic pilot end. This case hardware is separate from the existing M2.5 joystick flange hardware and PCB clamp hardware.
+The CAD uses a 7.0 mm countersink mouth, 3.4 mm through clearance, and 3.8 mm insert pilot with 4.8 mm depth. Countersunk screw length includes the head. Nominal screw penetration into the insert is 3.2 mm; allowing the approximately 0.14 mm head recess gives about 3.1 mm engagement. Screw ends remain inside the insert, clear of the plastic pilot end. This case hardware is separate from the existing M2.5 joystick flange hardware and PCB clamp hardware.
 
-Sources: [ruthex short insert](https://www.ruthex.de/en/products/ruthex-gewindeeinsatz-m3s-100stuck-rx-m3x4-0-short-messing-gewindebuchsen-fur-3d-druck), [ISO 10642 M3 head dimensions from Accu](https://www.accu.co.uk/countersunk-socket-head-screws/153243-SSK-M3-25-A2-BL). Heat-set inserts are for the thermoplastic prototype. A future resin/vendor print requires a suitable revised insert/fastening process.
+Sources: [selected Amazon AU insert](https://www.amazon.com.au/dp/B0BBSLL6G7), [ISO 10642 M3 head dimensions from Accu](https://www.accu.co.uk/countersunk-socket-head-screws/153243-SSK-M3-25-A2-BL). Heat-set inserts are for the thermoplastic prototype. A future resin/vendor print requires a suitable revised insert/fastening process.
 
 ## Checks and print orientation
 
@@ -42,11 +42,11 @@ Bambu Studio 02.08.02.61 sliced both final parts for the A1 mini 0.4 mm nozzle, 
 | File | Estimated total time | Filament |
 |---|---:|---:|
 | `PRINT_Base_Tray_A1mini.3mf` | 4 h 25 min | 74.89 g |
-| `PRINT_Palm_Cap_A1mini.3mf` | 4 h 05 min | 53.53 g |
+| `PRINT_Palm_Cap_A1mini.3mf` | 4 h 03 min | 53.39 g |
 
-Both recommended projects use automatic tree supports and finish slicing without warnings. Support adds approximately 0.71 g to the tray and 2.93 g to the cap. Cap support-interface coordinates were checked: all lie inside the joystick cavity or fixing pockets, with none on the exterior palm surface. The cap prints curved surface upward. The no-support audits flag a tray cantilever and cap floating regions, so this design is not qualified as fully support-free. Those audit files are not the recommended print projects. See `slicer_audit.json` and `support_contacts.json` for results.
+Both recommended projects use automatic tree supports and finish slicing without warnings. Support adds approximately 0.71 g to the tray and 2.84 g to the cap. Cap support-interface coordinates were checked: all lie inside the joystick cavity or fixing pockets, with none on the exterior palm surface. The cap prints curved surface upward. The no-support audits flag a tray cantilever and cap floating regions, so this design is not qualified as fully support-free. Those audit files are not the recommended print projects. See `slicer_audit.json` and `support_contacts.json` for results.
 
-Assembly interference and separate hardware/TPU-foot interference checks pass. The native Fusion concept was saved as cloud version 5 and backed up locally. Physical fit, screw strength and bed adhesion have not yet been validated on this revision. No print job was sent.
+Assembly interference and separate hardware/TPU-foot interference checks pass. The native Fusion concept was saved as cloud version 7 and backed up locally. Physical fit, screw strength and bed adhesion have not yet been validated on this revision. No print job was sent.
 
 Fastener locations (assembly XY, mm) and lengths:
 
@@ -68,3 +68,9 @@ The source exterior remains a preserved native BRep derived from the earlier par
 - `Cap_underside.png`: insert locations and mating shoulders.
 - `Joint_section.png`: explanatory section diagram of one 21 mm palm-side screw column (not a direct Fusion section screenshot).
 - `Wrist_edge.png`: hand-entry profile.
+
+## Amazon insert update - 28 October 2026
+
+Selected 3DZWMAN M3 x L4 x D4.2 (ASIN B0BBSLL6G7). The cap pilot is now 3.8 mm diameter, an engineering starting fit based on the listing drawing (4.2 mm knurl OD and approximately 3.675-3.75 mm core). This is not a published manufacturer pilot recommendation. Actual heat-set retention remains to be tested with the purchased inserts. Pocket depth stays 4.8 mm, with 0.8 mm nominal end relief; bottom tray, screw locations and lengths stay unchanged. Inserts are installed flush, without forcing them cold into the holes.
+
+

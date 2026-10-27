@@ -29,7 +29,7 @@
     },
     {
       "name": "Palm_Cap",
-      "volume_cm3": 119.06614736669084
+      "volume_cm3": 119.08967161248091
     }
   ],
   "minimum_new_post_to_joystick_envelope_clearance_mm": 3,
@@ -39,7 +39,7 @@
   "cloud_name": "SpaceMouse - Split Shell Concept - Review",
   "cloud_id": "urn:adsk.wipprod:dm.lineage:Oa1GpTwQR8iVvi6D4SRQIg",
   "screws": "2 x M3x25, 1 x M3x30, 1 x M3x35 ISO10642 countersunk",
-  "inserts": "4 x ruthex RX-M3Sx4.0, OD 4.6 mm, L 4.0 mm",
+  "inserts": "4 x 3DZWMAN M3 x L4 x D4.2, Amazon AU B0BBSLL6G7",
   "thread_engagement_mm": 3.2,
   "print_sent": false,
   "mounts": [
@@ -69,6 +69,40 @@
     }
   ],
   "cloud_saved": true,
-  "cloud_version": 6,
-  "long_insert_assessment": "5.7 mm inserts break through the low palm-side exterior; retain 4 mm inserts unless cap exterior is thickened"
+  "cloud_version": 7,
+  "long_insert_assessment": "5.7 mm inserts break through the low palm-side exterior; retain 4 mm inserts unless cap exterior is thickened",
+  "insert_pilot_diameter_mm": 3.8,
+  "insert_pilot_depth_mm": 4.8,
+  "insert_checks": [
+    {
+      "x": 28,
+      "y": -26,
+      "pilot_mm": 3.8,
+      "depth_mm": 4.8,
+      "closed_end": true
+    },
+    {
+      "x": 23.5,
+      "y": 41,
+      "pilot_mm": 3.8,
+      "depth_mm": 4.8,
+      "closed_end": true
+    },
+    {
+      "x": -37,
+      "y": 30,
+      "pilot_mm": 3.8,
+      "depth_mm": 4.8,
+      "closed_end": true
+    },
+    {
+      "x": -37,
+      "y": -10,
+      "pilot_mm": 3.8,
+      "depth_mm": 4.8,
+      "closed_end": true
+    }
+  ],
+  "printed_base_unchanged": true,
+  "physical_insert_retention": "Not yet tested; 3.8 mm engineering starting pilot"
 }

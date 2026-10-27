@@ -198,7 +198,8 @@ def finish(app,doc,d,root,tray,cap,r,req):
      assert tmp.booleanOperation(b,sh,adsk.fusion.BooleanTypes.UnionBooleanType)
     else:
      insert_length=req.get('insert_length_mm',4.0)/10
-     b=tmp.createCylinderOrCone(P(x/10,y/10,face),.23,P(x/10,y/10,face+insert_length),.23)
+     insert_radius=req.get('insert_od_mm',4.6)/20
+     b=tmp.createCylinderOrCone(P(x/10,y/10,face),insert_radius,P(x/10,y/10,face+insert_length),insert_radius)
      hole=tmp.createCylinderOrCone(P(x/10,y/10,face-.01),.15,P(x/10,y/10,face+insert_length+.01),.15)
      assert tmp.booleanOperation(b,hole,adsk.fusion.BooleanTypes.DifferenceBooleanType)
     a=c.bRepBodies.add(b,bf);a.name=(f"M3 x {mount['length']} screw " if c==ref else 'M3 short insert ')+str(i);a.appearance=ap
