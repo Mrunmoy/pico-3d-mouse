@@ -2,6 +2,12 @@
 
 Self-contained RP2040 3D mouse firmware and cross-platform Qt6 MVC Manufacturing Tester, Calibration & Buttonless Firmware Updater built in **100% C++17**, following **SOLID** design principles and full off-target **TDD** (GoogleTest + GMock).
 
+## Manufacturing Tester & Calibration Wizard Demo
+
+[![pico-3d-mouse Manufacturing Tester & Calibration Demo](docs/media/manufacturing_demo.gif)](docs/media/manufacturing_demo.mp4)
+
+> **Video**: [Watch / Download Full MP4 (`docs/media/manufacturing_demo.mp4`)](docs/media/manufacturing_demo.mp4)
+
 ## Key Features
 
 - **Composite USB-C Device (`0x2E8A:0x000A`)**:
@@ -13,6 +19,7 @@ Self-contained RP2040 3D mouse firmware and cross-platform Qt6 MVC Manufacturing
 - **Qt6 MVC Manufacturing Tester, Calibration & Buttonless Firmware Updater (`./scripts/ui`)**:
   - **100% Event-Driven (Zero Polling)**: Powered exclusively by Qt Signals & Slots (`QSerialPort::readyRead`, `QProcess` signals, and MVC model change notifications).
   - **Custom Decoupled SOLID Widgets**:
+    - `ManufacturingWizardWidget`: Interactive 6-step operator wizard (Connect -> Zero Resting Center -> Full-Range Axis Sweep -> Direction & Deadzone Check -> Save to QSPI Flash -> Final Sign-Off).
     - `GimbalRadarWidget`: Custom `QPainter` 2D X/Y deflection radar + concentric Twist rotation arc.
     - `AxisGaugeWidget`: Custom `QPainter` 12-bit ADC channel bar (`0..4095`), millivolts, center marker, deadzone band, min/max sweep watermarks, and per-axis Manufacturing Pass/Pending badge.
     - `CalibrationPanelWidget`: Interactive center zeroing, min/max sweep capture, per-axis deadzone spinboxes, polarity inversion checkboxes, and QSPI Flash save/load/reset controls.
@@ -62,7 +69,7 @@ See [docs/WIRING.md](docs/WIRING.md) and [docs/pinout.png](docs/pinout.png) for 
 
 ## SOLID Architecture & Colocated Unit Tests
 
-Every module directory under `src/` owns its `CMakeLists.txt`, public `include/`, implementation, and colocated `test/CMakeLists.txt` unit test suite (58 unit tests across 15 suites):
+Every module directory under `src/` owns its `CMakeLists.txt`, public `include/`, implementation, and colocated `test/CMakeLists.txt` unit test suite (59 unit tests across 16 suites):
 
 ```text
 .
@@ -70,10 +77,13 @@ Every module directory under `src/` owns its `CMakeLists.txt`, public `include/`
 ├── flake.nix / flake.lock                          # Hermetic Nix environment (zero external installs)
 ├── docs/
 │   ├── WIRING.md                                   # Detailed schematic & pin wiring diagram
-│   └── pinout.png                                  # RP2040 board pinout
+│   ├── pinout.png                                  # RP2040 board pinout
+│   └── media/
+│       ├── manufacturing_demo.gif                  # Inline README preview of the Manufacturing UI
+│       └── manufacturing_demo.mp4                  # Full-resolution screencast video
 ├── scripts/
 │   ├── build                                       # Build host tests, Qt6 UI, and RP2040 UF2 firmware
-│   ├── test                                        # Run all 58 colocated unit tests with ASan + UBSan
+│   ├── test                                        # Run all 59 colocated unit tests with ASan + UBSan
 │   ├── flash                                       # Buttonless auto-build, flash UF2, and capture logs
 │   ├── ui                                          # Launch Qt6 MVC Manufacturing Tester & Updater UI
 │   └── console                                     # Open interactive picocom console on /dev/ttyACM*
@@ -99,6 +109,7 @@ Every module directory under `src/` owns its `CMakeLists.txt`, public `include/`
 │       ├── services/                               # QtSerialTransport, PicotoolFirmwareUpdater + test/
 │       ├── models/                                 # DeviceTelemetryModel (telemetry, cal, mfg checks) + test/
 │       ├── widgets/                                # Decoupled SOLID Custom Widgets (each with test/)
+│       │   ├── manufacturing_wizard/               # ManufacturingWizardWidget (guided 6-step flow) + test/
 │       │   ├── gimbal_radar/                       # GimbalRadarWidget + test/
 │       │   ├── axis_gauge/                         # AxisGaugeWidget + test/
 │       │   ├── calibration_panel/                  # CalibrationPanelWidget + test/
@@ -110,20 +121,63 @@ Every module directory under `src/` owns its `CMakeLists.txt`, public `include/`
     └── apps/pico_3d_mouse/                         # RP2040 composition root -> pico_3d_mouse.uf2
 ```
 
-## Quick Start (Zero External Dependencies)
+## Quick Start
 
-All compilers (`g++`, `arm-none-eabi-gcc`), `pico-sdk 2.2.0` (with TinyUSB submodules), `qt6` (`qtbase`, `qtserialport`), `gtest`/`gmock`, `cmake`, `ninja`, and `picotool` are pinned in `flake.lock`. All helper scripts automatically invoke `nix develop` if you are not already inside the dev shell:
+### 1. Clone the Repository
 
 ```bash
-# 1. Run all 58 colocated off-target unit tests (with AddressSanitizer + UBSan)
-./scripts/test
+git clone https://github.com/Mrunmoy/pico-3d-mouse.git
+cd pico-3d-mouse
+```
 
-# 2. Build host unit tests, Qt6 MVC desktop app, and RP2040 UF2 firmware
+### 2. Environment Setup (Hermetic Nix Flake)
+
+All toolchains and dependencies—`g++`, `arm-none-eabi-gcc`, `pico-sdk 2.2.0` (with TinyUSB submodules), `qt6` (`qtbase`, `qtserialport`), `gtest`/`gmock`, `cmake`, `ninja`, and `picotool`—are pinned inside `flake.lock`.
+
+If you don't have Nix installed yet, install it with Flakes enabled using the [Determinate Nix Installer](https://github.com/DeterminateSystems/nix-installer):
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+```
+
+You can either enter the interactive development shell once (`nix develop`) or run the helper scripts directly (every script in `./scripts/` automatically invokes `nix develop` if you are outside the shell):
+
+```bash
+# Optional: enter the hermetic dev shell directly
+nix develop
+```
+
+### 3. Build Firmware, Host Tests & Qt6 Desktop UI
+
+Builds all host unit tests (`build/`), the Qt6 MVC Manufacturing Tester & Firmware Updater desktop app (`build/src/ui/app/pico_3d_mouse_ui`), and the RP2040 firmware images (`firmware/build/apps/pico_3d_mouse/pico_3d_mouse.uf2`):
+
+```bash
 ./scripts/build
+```
 
-# 3. Flash the connected Pico over USB-C (100% buttonless) and capture 5s of telemetry
+### 4. Run All Colocated Unit Tests (ASan + UBSan)
+
+Runs all 59 colocated GoogleTest / GMock unit tests across 16 suites with AddressSanitizer and UndefinedBehaviorSanitizer enabled:
+
+```bash
+./scripts/test
+```
+
+### 5. Flash Firmware to the Raspberry Pi Pico (100% Buttonless)
+
+Connect the Raspberry Pi Pico over USB-C and run `./scripts/flash`. It automatically builds the latest UF2, triggers a buttonless reboot into `BOOTSEL` mode via `picotool`, flashes `pico_3d_mouse.uf2`, reboots into the application, and streams 5 seconds of live USB-CDC verification logs:
+
+```bash
 ./scripts/flash pico_3d_mouse 5
+```
 
-# 4. Launch the Qt6 MVC Manufacturing Tester, Calibration & Buttonless Firmware Updater UI
+### 6. Launch the Qt6 Manufacturing Tester, Calibration & Updater UI
+
+Launch the desktop application (it auto-detects `/dev/ttyACM0`, or you can pass a specific serial port):
+
+```bash
+./scripts/ui
+# Or specify a port explicitly:
 ./scripts/ui /dev/ttyACM0
 ```
+
