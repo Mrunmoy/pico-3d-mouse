@@ -1,0 +1,6 @@
+# Third-party Qt6Gui / Offscreen platform plugin / FreeType / HarfBuzz global font caches
+leak:libQt6Gui.so
+leak:libqoffscreen.so
+leak:libharfbuzz.so
+leak:libfreetype.so
+leak:libfontconfig.so

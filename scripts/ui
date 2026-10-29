@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Build (if needed) and launch the Qt6 MVC Manufacturing Tester, Calibration &
+# Buttonless Firmware Updater desktop application.
+#
+# Usage:
+#   ./scripts/ui [serial-port]
+#
+# Examples:
+#   ./scripts/ui
+#   ./scripts/ui /dev/ttyACM0
+
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+
+if [[ -z "${PICO_SDK_PATH:-}" ]]; then
+    exec nix develop "$repo_root" --command "$0" "$@"
+fi
+
+ui_bin="$repo_root/build/src/ui/app/pico_3d_mouse_ui"
+
+if [[ ! -x "$ui_bin" ]]; then
+    cmake -S "$repo_root" -B "$repo_root/build" -G Ninja -DP3D_BUILD_TESTS=ON
+    cmake --build "$repo_root/build" --target pico_3d_mouse_ui
+fi
+
+exec "$ui_bin" "$@"

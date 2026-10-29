@@ -30,3 +30,7 @@ add_subdirectory(hal)
 add_subdirectory(platform)
 add_subdirectory(drivers)
 add_subdirectory(domain)
+
+if(P3D_BACKEND STREQUAL "host")
+    add_subdirectory(ui)
+endif()

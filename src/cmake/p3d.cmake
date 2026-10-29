@@ -31,11 +31,12 @@ endfunction()
 # p3d_add_module(<target>
 #     ALIAS <p3d::name>
 #     [INTERFACE]                    header-only target
+#     [HEADERS <files>...]
 #     [SOURCES <files>...]
 #     [PUBLIC_DEPS <targets>...]
 #     [PRIVATE_DEPS <targets>...])
 function(p3d_add_module name)
-    cmake_parse_arguments(arg "INTERFACE" "ALIAS" "SOURCES;PUBLIC_DEPS;PRIVATE_DEPS" ${ARGN})
+    cmake_parse_arguments(arg "INTERFACE" "ALIAS" "HEADERS;SOURCES;PUBLIC_DEPS;PRIVATE_DEPS" ${ARGN})
     if(NOT arg_ALIAS)
         message(FATAL_ERROR "p3d_add_module(${name}): ALIAS is required")
     endif()
@@ -49,7 +50,7 @@ function(p3d_add_module name)
         endif()
         target_link_libraries(${name} INTERFACE ${arg_PUBLIC_DEPS})
     else()
-        add_library(${name} STATIC ${arg_SOURCES})
+        add_library(${name} STATIC ${arg_HEADERS} ${arg_SOURCES})
         if(EXISTS ${include_dir})
             target_include_directories(${name} PUBLIC ${include_dir})
         endif()
@@ -87,5 +88,8 @@ function(p3d_add_test_executable name)
     add_executable(${name} ${arg_SOURCES})
     target_link_libraries(${name} PRIVATE ${arg_DEPS} GTest::gtest_main GTest::gmock)
     p3d_strict_sources(${arg_SOURCES})
-    gtest_discover_tests(${name} DISCOVERY_TIMEOUT 30)
+    gtest_discover_tests(${name}
+        DISCOVERY_TIMEOUT 30
+        PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+    )
 endfunction()

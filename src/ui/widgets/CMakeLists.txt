@@ -1,0 +1,4 @@
+add_subdirectory(gimbal_radar)
+add_subdirectory(axis_gauge)
+add_subdirectory(calibration_panel)
+add_subdirectory(firmware_updater)

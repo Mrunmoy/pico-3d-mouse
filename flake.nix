@@ -27,11 +27,12 @@
           name = "pico-3d-mouse";
 
           packages = with pkgs; [
-            # ── Host toolchain & off-target TDD ──────────────────
+            # ── Host toolchain, Qt6 UI & off-target TDD ──────────
             gcc
             gtest
             clang-tools
-            python3
+            qt6.qtbase
+            qt6.qtserialport
 
             # ── RP2040 Cross-Toolchain ───────────────────────────
             # Cortex-M0+ (RP2040) — arm-none-eabi-{gcc,g++,gdb,objdump,...}
@@ -55,6 +56,7 @@
           shellHook = ''
             export PICO_SDK_PATH=${pico-sdk-src}
             export PICO_BOARD=pico
+            export QT_PLUGIN_PATH="${pkgs.qt6.qtbase}/lib/qt-6/plugins"
 
             echo "────────────────────────────────────────────────"
             echo " pico-3d-mouse (RP2040 + Host TDD) dev shell"

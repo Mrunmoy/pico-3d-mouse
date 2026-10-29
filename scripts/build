@@ -68,7 +68,9 @@ if [[ "$target_only" -eq 0 ]]; then
         -DP3D_ENABLE_ASAN="$enable_asan"
     cmake --build "$repo_root/build"
     if [[ "$run_tests" -eq 1 ]]; then
-        ctest --test-dir "$repo_root/build" --output-on-failure
+        QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-offscreen}" \
+        LSAN_OPTIONS="suppressions=$repo_root/src/cmake/lsan.supp:print_suppressions=0" \
+            ctest --test-dir "$repo_root/build" --output-on-failure
     fi
 fi
 
