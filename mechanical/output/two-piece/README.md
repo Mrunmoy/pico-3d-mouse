@@ -42,7 +42,7 @@ Bambu Studio 02.08.02.61 sliced both final parts for the A1 mini 0.4 mm nozzle, 
 | File | Estimated total time | Filament |
 |---|---:|---:|
 | `PRINT_Base_Tray_A1mini.3mf` | 4 h 25 min | 74.89 g |
-| `PRINT_Palm_Cap_A1mini.3mf` | 4 h 03 min | 53.39 g |
+| `PRINT_Top_and_PCB_Retainer_A1mini.3mf` | 4 h 11 min | 54.32 g |
 
 Both recommended projects use automatic tree supports and finish slicing without warnings. Support adds approximately 0.71 g to the tray and 2.84 g to the cap. Cap support-interface coordinates were checked: all lie inside the joystick cavity or fixing pockets, with none on the exterior palm surface. The cap prints curved surface upward. The no-support audits flag a tray cantilever and cap floating regions, so this design is not qualified as fully support-free. Those audit files are not the recommended print projects. See `slicer_audit.json` and `support_contacts.json` for results.
 
@@ -77,3 +77,7 @@ Selected 3DZWMAN M3 x L4 x D4.2 (ASIN B0BBSLL6G7). The cap pilot is now 3.8 mm d
 
 Combined cap and PCB clamp plate: PRINT_Top_and_PCB_Retainer_A1mini.3mf, saved from Bambu Studio with separated brims, 0.12 mm layers, 4 h 11 min / 54.32 g. PCB_Retainer_print.stl is the earlier retainer reflected in X to match the corrected assembly and kept bridge-face down. Cap remains flat compound joint face down. A geometric 5/10 degree tilt check shows loss of broad direct bed contact; tilted printing was not selected. No job sent.
 
+
+## Print-file selection
+
+Only two delivery 3MF projects are retained: `PRINT_Base_Tray_A1mini.3mf` and `PRINT_Top_and_PCB_Retainer_A1mini.3mf`. They contain three rigid parts total. Individual rigid-part STLs and four `TPU_Strip_*_print.stl` accessories are also available. The TPU meshes were recovered from the retained original files and reflected across X to match the current left-hand assembly; their flat print faces remain down. Slice these separately using the actual TPU material profile, not the PLA projects. Diagnostic 3MFs regenerate only under the ignored `slicer-audit/` directory.

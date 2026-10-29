@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np,struct,json,zipfile,collections,math
 from xml.etree import ElementTree as ET
 ROOT=Path(__file__).resolve().parents[2];OUT=ROOT/'output'/'two-piece'
+AUDIT=OUT/'slicer-audit';AUDIT.mkdir(parents=True,exist_ok=True)
 report=json.loads((OUT/'report.json').read_text());assert report.get('complete')
 settings_file=Path(__file__).with_name('slicer_settings.json')
 results=[]
@@ -34,6 +35,6 @@ for part in report['parts']:
  build=ET.SubElement(model,'build');ET.SubElement(build,'item',objectid='1',transform='1 0 0 0 1 0 0 0 1 90 90 0')
  rels='<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" Target="/3D/3dmodel.model" Id="rel0"/></Relationships>'
  content='<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/><Default Extension="config" ContentType="text/plain"/></Types>'
- with zipfile.ZipFile(OUT/(name+'_NoSupports_Audit.3mf'),'w',zipfile.ZIP_DEFLATED) as target:
+ with zipfile.ZipFile(AUDIT/(name+'_NoSupports_Audit.3mf'),'w',zipfile.ZIP_DEFLATED) as target:
   target.writestr('[Content_Types].xml',content);target.writestr('_rels/.rels',rels);target.writestr('3D/3dmodel.model',ET.tostring(model,encoding='utf-8',xml_declaration=True));target.writestr('Metadata/project_settings.config',json.dumps(settings))
 (OUT/'mesh_audit.json').write_text(json.dumps(results,indent=2));print(json.dumps(results,indent=2))

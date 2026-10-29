@@ -9,7 +9,7 @@ for name in ('Base_Tray','Palm_Cap'):
  for enabled in (False,True):
   mode='local_support' if enabled else 'no_support'
   folder=OUT/'slicer-audit'/(name+'_'+mode);folder.mkdir(parents=True,exist_ok=True)
-  source=OUT/(name+'_NoSupports_Audit.3mf');project=folder/'input.3mf'
+  source=OUT/'slicer-audit'/(name+'_NoSupports_Audit.3mf');project=folder/'input.3mf'
   with zipfile.ZipFile(source) as src,zipfile.ZipFile(project,'w',zipfile.ZIP_DEFLATED) as dst:
    for item in src.infolist():
     data=src.read(item.filename)

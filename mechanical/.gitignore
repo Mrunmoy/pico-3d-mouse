@@ -12,3 +12,6 @@ output/*.zip
 *.jpg
 *.jpeg
 Gemini_Generated_Render.jpg
+
+# Generated slicer diagnostics are not printable delivery projects.
+/output/two-piece/slicer-audit/

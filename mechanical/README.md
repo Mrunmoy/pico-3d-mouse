@@ -73,4 +73,6 @@ On 29 October 2026 the original mechanical repository through commit `147712c` w
 
 ## Retired variations
 
-On 29 October 2026 obsolete ergonomic trials, split concepts, fit-test builders and pre-release exports were removed from the working tree. Recover them from commit `876aab3` or earlier; all history remains in this repository. Current source components inside the native CAD are preserved to avoid breaking its feature timeline. TPU strip bodies remain in that master and can be exported from it when required.
+On 29 October 2026 obsolete ergonomic trials, split concepts, fit-test builders and pre-release exports were removed from the working tree. Recover them from commit `876aab3` or earlier; all history remains in this repository. Current source components inside the native CAD are preserved to avoid breaking its feature timeline. Four current-handed TPU strip STLs are supplied beside the rigid-part STLs; slice these separately using your TPU profile. Their native bodies also remain in the master.
+
+TPU accessories: [strip 1](output/two-piece/TPU_Strip_1_print.stl), [strip 2](output/two-piece/TPU_Strip_2_print.stl), [strip 3](output/two-piece/TPU_Strip_3_print.stl), [strip 4](output/two-piece/TPU_Strip_4_print.stl).
