@@ -35,6 +35,16 @@ namespace p3d::ui
 
             MainWindow window{ serial, updater, model, controller };
 
+            // Starts on Wizard Step 0 (ConnectDevice)
+            EXPECT_EQ(window.manufacturingWizard()->currentStep(),
+                      ManufacturingWizardWidget::Step::ConnectDevice);
+
+            // Simulate connection -> automatically queries GET_CAL and advances Wizard to Step 1 (CenterCalibration)
+            EXPECT_CALL(serial, sendCommand(QString("GET_CAL"))).WillOnce(Return(true));
+            emit serial.connectionStateChanged(true, "/dev/ttyACM0");
+            EXPECT_EQ(window.manufacturingWizard()->currentStep(),
+                      ManufacturingWizardWidget::Step::CenterCalibration);
+
             // 1. Emit live telemetry from device -> verify AxisGaugeWidgets and GimbalRadarWidget update reactively
             emit serial.lineReceived(
                 "FWD_BCK(ADC0)[raw=2048 1650mV d= +0 out= +0]  "
@@ -61,7 +71,7 @@ namespace p3d::ui
             EXPECT_TRUE(window.overallVerdictBadge()->text().contains("PASS"));
             EXPECT_EQ(window.gimbalRadar()->forwardBackward(), 500);
 
-            // 3. Emit @CAL STATUS -> verify CalibrationPanelWidget and AxisGaugeWidget markers update
+            // 3. Emit @CAL SAVED_OK -> verify CalibrationPanelWidget, Wizard, and AxisGaugeWidget markers update
             emit serial.lineReceived(
                 "@CAL SAVED_OK CH0[c=2117 min=100 max=4000 dz=18 inv=1] "
                 "CH1[c=2111 min=110 max=3990 dz=12 inv=0] "
@@ -69,6 +79,8 @@ namespace p3d::ui
 
             EXPECT_EQ(window.calibrationPanel()->deadzoneForAxis(0), 18);
             EXPECT_TRUE(window.calibrationPanel()->invertForAxis(0));
+            EXPECT_EQ(window.manufacturingWizard()->deadzoneForAxis(0), 18);
+            EXPECT_TRUE(window.manufacturingWizard()->invertForAxis(0));
             EXPECT_EQ(window.axisGauge(0)->centerCounts(), 2117U);
 
             // 4. Click "Save to QSPI Flash" on CalibrationPanelWidget -> sends SAVE_CAL

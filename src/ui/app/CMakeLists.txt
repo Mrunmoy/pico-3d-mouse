@@ -12,6 +12,7 @@ p3d_add_module(p3d_ui_main_window
         p3d::ui::widget_axis_gauge
         p3d::ui::widget_calibration_panel
         p3d::ui::widget_firmware_updater
+        p3d::ui::widget_manufacturing_wizard
         Qt6::Core
         Qt6::Gui
         Qt6::Widgets

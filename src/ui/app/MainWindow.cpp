@@ -1,7 +1,5 @@
 #include "ui/app/MainWindow.hpp"
 
-#include <QDir>
-#include <QFileInfo>
 #include <QHBoxLayout>
 #include <QStatusBar>
 #include <QVBoxLayout>
@@ -20,8 +18,8 @@ namespace p3d::ui
         , m_controller(controller)
     {
         setWindowTitle(
-            QStringLiteral("pico-3d-mouse — Manufacturing Tester, Calibration & Buttonless Firmware Updater"));
-        resize(1080, 720);
+            QStringLiteral("pico-3d-mouse — Step-by-Step Manufacturing Tester, Calibration & Firmware Updater"));
+        resize(1160, 740);
 
         auto* central = new QWidget(this);
         auto* root    = new QVBoxLayout(central);
@@ -35,25 +33,25 @@ namespace p3d::ui
         m_portCombo->setMinimumWidth(200);
         topBar->addWidget(m_portCombo);
 
-        m_refreshBtn = new QPushButton(QStringLiteral("Refresh Ports"), central);
-        m_connectBtn = new QPushButton(QStringLiteral("Connect"), central);
-        m_resetTestBtn = new QPushButton(QStringLiteral("Reset Mfg Test"), central);
+        m_refreshBtn   = new QPushButton(QStringLiteral("Refresh Ports"), central);
+        m_connectBtn   = new QPushButton(QStringLiteral("Connect"), central);
+        m_resetTestBtn = new QPushButton(QStringLiteral("Restart Test"), central);
         topBar->addWidget(m_refreshBtn);
         topBar->addWidget(m_connectBtn);
         topBar->addWidget(m_resetTestBtn);
         topBar->addStretch(1);
 
         m_verdictBadge = new QLabel(
-            QStringLiteral("MFG TEST: IN PROGRESS (SWEEP ALL 3 AXES)"), central);
+            QStringLiteral("MFG TEST: IN PROGRESS (FOLLOW WIZARD STEPS)"), central);
         m_verdictBadge->setAlignment(Qt::AlignCenter);
-        m_verdictBadge->setMinimumWidth(310);
+        m_verdictBadge->setMinimumWidth(330);
         m_verdictBadge->setStyleSheet(
             QStringLiteral("QLabel { background-color: #374151; color: #F9FAFB; font-weight: bold; "
                            "padding: 6px 12px; border-radius: 6px; }"));
         topBar->addWidget(m_verdictBadge);
         root->addLayout(topBar);
 
-        // ── Main Content Split: Telemetry/Radar (Left) vs Calibration/Updater (Right) ──
+        // ── Main Content Split: Live Visualizers (Left) vs Guided Wizard / Tools (Right) ──
         auto* contentRow = new QHBoxLayout();
 
         auto* leftCol = new QVBoxLayout();
@@ -71,26 +69,39 @@ namespace p3d::ui
 
         m_radar = new GimbalRadarWidget(central);
         leftCol->addWidget(m_radar, 1);
-        contentRow->addLayout(leftCol, 1);
+        contentRow->addLayout(leftCol, 5);
 
-        auto* rightCol = new QVBoxLayout();
-        m_calPanel     = new CalibrationPanelWidget(central);
-        m_fwWidget     = new FirmwareUpdaterWidget(central);
+        m_rightTabs = new QTabWidget(central);
+
+        // Tab 0: Step-by-Step Guided Manufacturing Wizard (default view)
+        m_wizard = new ManufacturingWizardWidget(m_rightTabs);
+        m_rightTabs->addTab(m_wizard,
+                            QStringLiteral("1. Guided Step-by-Step Calibration & Test"));
+
+        // Tab 1: Buttonless Firmware Update & Expert Manual Controls
+        auto* toolsPage   = new QWidget(m_rightTabs);
+        auto* toolsLayout = new QVBoxLayout(toolsPage);
+        m_fwWidget        = new FirmwareUpdaterWidget(toolsPage);
+        m_calPanel        = new CalibrationPanelWidget(toolsPage);
 
         const QString defaultUf2 =
             QStringLiteral("firmware/build/apps/pico_3d_mouse/pico_3d_mouse.uf2");
         m_fwWidget->setUf2FilePath(defaultUf2);
 
-        rightCol->addWidget(m_calPanel);
-        rightCol->addWidget(m_fwWidget);
-        rightCol->addStretch(1);
-        contentRow->addLayout(rightCol, 1);
+        toolsLayout->addWidget(m_fwWidget);
+        toolsLayout->addWidget(m_calPanel);
+        toolsLayout->addStretch(1);
+        m_rightTabs->addTab(toolsPage,
+                            QStringLiteral("2. Firmware Updater & Expert Controls"));
+
+        contentRow->addLayout(new QVBoxLayout(), 0);
+        contentRow->addWidget(m_rightTabs, 6);
 
         root->addLayout(contentRow, 1);
         setCentralWidget(central);
 
         statusBar()->showMessage(
-            QStringLiteral("Ready — select RP2040 USB-C port (/dev/ttyACM0) and click Connect."));
+            QStringLiteral("Step 1: Select RP2040 USB-C port (/dev/ttyACM0) and click Connect."));
 
         onRefreshPortsClicked();
 
@@ -105,8 +116,13 @@ namespace p3d::ui
                 &MainWindow::onConnectToggleClicked);
         connect(m_resetTestBtn,
                 &QPushButton::clicked,
-                &m_controller,
-                &ManufacturingController::requestResetManufacturingTest);
+                this,
+                [this]() {
+                    m_controller.requestResetManufacturingTest();
+                    m_wizard->setStep(m_serial.isConnected()
+                                          ? ManufacturingWizardWidget::Step::CenterCalibration
+                                          : ManufacturingWizardWidget::Step::ConnectDevice);
+                });
 
         connect(&m_serial,
                 &ISerialTransport::connectionStateChanged,
@@ -134,6 +150,49 @@ namespace p3d::ui
                 &ManufacturingController::statusAnnouncement,
                 statusBar(),
                 [this](const QString& msg) { statusBar()->showMessage(msg); });
+
+        // ManufacturingWizardWidget -> ManufacturingController / MainWindow
+        connect(m_wizard,
+                &ManufacturingWizardWidget::connectDeviceRequested,
+                this,
+                [this]() {
+                    if (!m_serial.isConnected())
+                    {
+                        m_controller.requestConnect(m_portCombo->currentText().trimmed());
+                    }
+                });
+        connect(m_wizard,
+                &ManufacturingWizardWidget::openFirmwareUpdaterRequested,
+                this,
+                [this]() { m_rightTabs->setCurrentIndex(1); });
+        connect(m_wizard,
+                &ManufacturingWizardWidget::zeroCenterRequested,
+                &m_controller,
+                &ManufacturingController::requestZeroCenter);
+        connect(m_wizard,
+                &ManufacturingWizardWidget::minMaxSweepStartRequested,
+                &m_controller,
+                &ManufacturingController::requestMinMaxSweepStart);
+        connect(m_wizard,
+                &ManufacturingWizardWidget::minMaxSweepEndRequested,
+                &m_controller,
+                &ManufacturingController::requestMinMaxSweepEnd);
+        connect(m_wizard,
+                &ManufacturingWizardWidget::deadzoneChanged,
+                &m_controller,
+                &ManufacturingController::requestSetDeadzone);
+        connect(m_wizard,
+                &ManufacturingWizardWidget::invertChanged,
+                &m_controller,
+                &ManufacturingController::requestSetInvert);
+        connect(m_wizard,
+                &ManufacturingWizardWidget::saveCalibrationRequested,
+                &m_controller,
+                &ManufacturingController::requestSaveCalibration);
+        connect(m_wizard,
+                &ManufacturingWizardWidget::restartWizardRequested,
+                &m_controller,
+                &ManufacturingController::requestResetManufacturingTest);
 
         // CalibrationPanelWidget -> ManufacturingController
         connect(m_calPanel,
@@ -225,12 +284,13 @@ namespace p3d::ui
         }
     }
 
-    void MainWindow::onConnectionStateChanged(bool connected, const QString& /*portName*/)
+    void MainWindow::onConnectionStateChanged(bool connected, const QString& portName)
     {
         m_connectBtn->setText(connected ? QStringLiteral("Disconnect")
                                         : QStringLiteral("Connect"));
         m_portCombo->setEnabled(!connected);
         m_refreshBtn->setEnabled(!connected);
+        m_wizard->setConnected(connected, portName);
     }
 
     void MainWindow::onTelemetryUpdated()
@@ -249,6 +309,13 @@ namespace p3d::ui
             m_gauges[i]->setManufacturingCheckStatus(verdict.centerInSpec,
                                                      verdict.negativeTravelReached,
                                                      verdict.positiveTravelReached);
+
+            m_wizard->updateAxisSweepProgress(i,
+                                              verdict.centerInSpec,
+                                              verdict.negativeTravelReached,
+                                              verdict.positiveTravelReached,
+                                              live.minObservedRaw,
+                                              live.maxObservedRaw);
         }
 
         m_radar->setAxesOutput(m_model.axisLive(0).scaledOutput,
@@ -276,10 +343,18 @@ namespace p3d::ui
                                            cal.maxCounts,
                                            cal.deadzoneCounts,
                                            cal.invert);
+
+            m_wizard->setAxisCalibration(static_cast<int>(i),
+                                         cal.centerCounts,
+                                         cal.minCounts,
+                                         cal.maxCounts,
+                                         cal.deadzoneCounts,
+                                         cal.invert);
         }
 
         m_calPanel->setStatusMessage(
             QStringLiteral("Calibration status: %1").arg(eventName));
+        m_wizard->onDeviceCalibrationEvent(eventName);
     }
 
     void MainWindow::onManufacturingVerdictChanged(bool allPassed)
@@ -294,7 +369,7 @@ namespace p3d::ui
         else
         {
             m_verdictBadge->setText(
-                QStringLiteral("MFG TEST: IN PROGRESS (SWEEP ALL 3 AXES)"));
+                QStringLiteral("MFG TEST: IN PROGRESS (FOLLOW WIZARD STEPS)"));
             m_verdictBadge->setStyleSheet(
                 QStringLiteral("QLabel { background-color: #374151; color: #F9FAFB; font-weight: bold; "
                                "padding: 6px 12px; border-radius: 6px; }"));
