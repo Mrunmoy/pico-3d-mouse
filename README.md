@@ -8,6 +8,12 @@ Self-contained RP2040 3D mouse firmware and cross-platform Qt6 MVC Manufacturing
 
 > **Video**: [Watch / Download Full MP4 (`docs/media/manufacturing_demo.mp4`)](docs/media/manufacturing_demo.mp4)
 
+### Screenshots
+
+| Live 3-DOF Telemetry & Direction/Deadzone Tuning | Final Manufacturing Pass & QSPI Flash Sign-Off |
+| :---: | :---: |
+| ![Active Calibration & 3-DOF Radar](docs/media/manufacturing_tester_active.png) | ![Manufacturing Pass & QSPI Flash Verification](docs/media/manufacturing_tester_pass.png) |
+
 ## Key Features
 
 - **Composite USB-C Device (`0x2E8A:0x000A`)**:
@@ -80,7 +86,9 @@ Every module directory under `src/` owns its `CMakeLists.txt`, public `include/`
 │   ├── pinout.png                                  # RP2040 board pinout
 │   └── media/
 │       ├── manufacturing_demo.gif                  # Inline README preview of the Manufacturing UI
-│       └── manufacturing_demo.mp4                  # Full-resolution screencast video
+│       ├── manufacturing_demo.mp4                  # Full-resolution screencast video
+│       ├── manufacturing_tester_active.png         # Screenshot: Live 3-DOF telemetry & tuning
+│       └── manufacturing_tester_pass.png           # Screenshot: Manufacturing Pass & QSPI Flash sign-off
 ├── scripts/
 │   ├── build                                       # Build host tests, Qt6 UI, and RP2040 UF2 firmware
 │   ├── test                                        # Run all 59 colocated unit tests with ASan + UBSan
