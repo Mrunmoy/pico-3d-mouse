@@ -16,15 +16,15 @@ namespace
     constexpr std::uint16_t kUsbVid = 0x256FU;  // 3Dconnexion
     constexpr std::uint16_t kUsbPid = 0xC631U;  // SpaceMouse Pro Wireless (cabled)
 
-    constexpr std::uint8_t kItfCdc   = 0U;      // occupies interfaces 0 and 1 (Windows inbox usbser.sys)
-    constexpr std::uint8_t kItfHid   = 2U;      // interface 2 (6-DOF 3Dconnexion HID IN + OUT)
+    constexpr std::uint8_t kItfHid   = 0U;      // interface 0 (6-DOF 3Dconnexion HID IN + OUT on MI_00 / EP1)
+    constexpr std::uint8_t kItfCdc   = 1U;      // occupies interfaces 1 and 2 (Windows inbox usbser.sys / Linux cdc_acm)
     constexpr std::uint8_t kItfTotal = 3U;
 
-    constexpr std::uint8_t kEpCdcCmd = 0x81U;
-    constexpr std::uint8_t kEpCdcOut = 0x02U;
-    constexpr std::uint8_t kEpCdcIn  = 0x82U;
-    constexpr std::uint8_t kEpHidOut = 0x03U;
-    constexpr std::uint8_t kEpHidIn  = 0x83U;
+    constexpr std::uint8_t kEpHidOut = 0x01U;
+    constexpr std::uint8_t kEpHidIn  = 0x81U;
+    constexpr std::uint8_t kEpCdcCmd = 0x82U;
+    constexpr std::uint8_t kEpCdcOut = 0x03U;
+    constexpr std::uint8_t kEpCdcIn  = 0x83U;
 
     constexpr std::uint8_t kStrLang    = 0U;
     constexpr std::uint8_t kStrManuf   = 1U;
@@ -116,12 +116,12 @@ namespace
     const std::uint8_t kConfigurationDescriptor[kConfigTotalLen] = {
         TUD_CONFIG_DESCRIPTOR(1, kItfTotal, kStrLang, kConfigTotalLen, 0x00, 250),
 
-        // Interfaces 0 & 1: USB-CDC Serial for calibration & 1200-baud buttonless BOOTSEL
-        TUD_CDC_DESCRIPTOR(kItfCdc, kStrCdc, kEpCdcCmd, 8, kEpCdcOut, kEpCdcIn, 64),
-
-        // Interface 2: 6-DOF 3Dconnexion SpaceMouse HID (both IN and OUT interrupt endpoints required by Windows 3DxWare)
+        // Interface 0: 6-DOF 3Dconnexion SpaceMouse HID (MI_00, EP 0x81 IN & 0x01 OUT required by 3DxWare / 3dxsrv)
         TUD_HID_INOUT_DESCRIPTOR(kItfHid, kStrHid, HID_ITF_PROTOCOL_NONE,
-                                 sizeof(kHidReportDescriptor), kEpHidOut, kEpHidIn, 32, 8)
+                                 sizeof(kHidReportDescriptor), kEpHidOut, kEpHidIn, 32, 8),
+
+        // Interfaces 1 & 2: USB-CDC Serial for calibration & 1200-baud buttonless BOOTSEL
+        TUD_CDC_DESCRIPTOR(kItfCdc, kStrCdc, kEpCdcCmd, 8, kEpCdcOut, kEpCdcIn, 64)
     };
 
     char g_serialStr[PICO_UNIQUE_BOARD_ID_SIZE_BYTES * 2 + 1]{};
