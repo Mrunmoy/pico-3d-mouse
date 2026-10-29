@@ -42,7 +42,11 @@ is_running_cdc() {
 trigger_serial_bootsel() {
     for candidate in /dev/ttyACM0 /dev/ttyACM1 /dev/ttyACM2 /dev/ttyACM3; do
         [[ -e "$candidate" ]] || continue
-        stty -F "$candidate" 1200 2>/dev/null || true
+        props=$(udevadm info -q property -n "$candidate" 2>/dev/null || true)
+        vid=$(awk -F= '/^ID_VENDOR_ID=/ {print tolower($2)}' <<< "$props")
+        if [[ "$vid" == "2e8a" || "$vid" == "046d" || "$vid" == "256f" ]]; then
+            stty -F "$candidate" 1200 2>/dev/null || true
+        fi
     done
 }
 
