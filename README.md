@@ -50,7 +50,6 @@ Every module under `src/` owns its `CMakeLists.txt`, public `include/`, implemen
 
 ```text
 .
-├── build.py                                        # Unified host TDD + RP2040 firmware orchestrator
 ├── CMakeLists.txt                                  # Root host build & CTest entry point
 ├── flake.nix / flake.lock                          # Hermetic Nix environment (zero external installs)
 ├── docs/

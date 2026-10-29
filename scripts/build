@@ -1,6 +1,78 @@
 #!/usr/bin/env bash
-# Build off-target host tests + RP2040 target firmware (self-contained via Nix flake).
+# Build off-target host TDD suite and RP2040 target UF2 firmware.
+#
+# Usage:
+#   ./scripts/build [-t|--test] [--host-only] [--target-only] [--asan] [--clean]
+#
+# Self-contained: automatically enters `nix develop` if not already in the devShell.
+
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
-exec "$repo_root/build.py" "$@"
+
+if [[ -z "${PICO_SDK_PATH:-}" ]]; then
+    exec nix develop "$repo_root" --command "$0" "$@"
+fi
+
+run_tests=0
+host_only=0
+target_only=0
+enable_asan="OFF"
+clean=0
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -t|--test)
+            run_tests=1
+            shift
+            ;;
+        --host-only)
+            host_only=1
+            shift
+            ;;
+        --target-only)
+            target_only=1
+            shift
+            ;;
+        --asan)
+            enable_asan="ON"
+            shift
+            ;;
+        --clean)
+            clean=1
+            shift
+            ;;
+        *)
+            echo "usage: ./scripts/build [-t|--test] [--host-only] [--target-only] [--asan] [--clean]" >&2
+            exit 2
+            ;;
+    esac
+done
+
+if [[ "$host_only" -eq 1 && "$target_only" -eq 1 ]]; then
+    echo "error: cannot combine --host-only and --target-only" >&2
+    exit 2
+fi
+
+if [[ "$clean" -eq 1 ]]; then
+    rm -rf "$repo_root/build" "$repo_root/firmware/build"
+fi
+
+if [[ "$host_only" -eq 0 && "$target_only" -eq 0 ]]; then
+    run_tests=1
+fi
+
+if [[ "$target_only" -eq 0 ]]; then
+    cmake -S "$repo_root" -B "$repo_root/build" -G Ninja \
+        -DP3D_BUILD_TESTS=ON \
+        -DP3D_ENABLE_ASAN="$enable_asan"
+    cmake --build "$repo_root/build"
+    if [[ "$run_tests" -eq 1 ]]; then
+        ctest --test-dir "$repo_root/build" --output-on-failure
+    fi
+fi
+
+if [[ "$host_only" -eq 0 ]]; then
+    cmake -S "$repo_root/firmware" -B "$repo_root/firmware/build" -G Ninja
+    cmake --build "$repo_root/firmware/build"
+fi

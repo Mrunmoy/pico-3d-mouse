@@ -9,7 +9,7 @@ namespace p3d::test
     {
     public:
         MOCK_METHOD(bool, init, (), (override));
-        MOCK_METHOD(int, readCharNonBlocking, (), (override));
-        MOCK_METHOD(void, writeLine, (const char* str), (override));
+        MOCK_METHOD(std::optional<char>, readCharNonBlocking, (), (override));
+        MOCK_METHOD(void, writeLine, (std::string_view line), (override));
     };
 }

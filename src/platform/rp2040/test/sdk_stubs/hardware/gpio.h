@@ -3,8 +3,8 @@
 #include <cstdint>
 #include "PicoSdkStubState.hpp"
 
-#define GPIO_OUT 1
-#define GPIO_IN  0
+inline constexpr bool GPIO_OUT = true;
+inline constexpr bool GPIO_IN  = false;
 
 inline void gpio_init(unsigned int gpio)
 {

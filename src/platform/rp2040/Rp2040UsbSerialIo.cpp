@@ -11,18 +11,23 @@ namespace p3d::platform::rp2040
         return stdio_init_all();
     }
 
-    int Rp2040UsbSerialIo::readCharNonBlocking()
+    std::optional<char> Rp2040UsbSerialIo::readCharNonBlocking()
     {
         const int ch = getchar_timeout_us(0);
         if (ch == PICO_ERROR_TIMEOUT)
         {
-            return -1;
+            return std::nullopt;
         }
-        return ch;
+        return static_cast<char>(ch);
     }
 
-    void Rp2040UsbSerialIo::writeLine(const char* str)
+    void Rp2040UsbSerialIo::writeLine(std::string_view line)
     {
-        std::printf("%s\r\n", str);
+        if (!line.empty())
+        {
+            (void)std::fwrite(line.data(), 1U, line.size(), stdout);
+        }
+        (void)std::fwrite("\r\n", 1U, 2U, stdout);
+        (void)std::fflush(stdout);
     }
 }

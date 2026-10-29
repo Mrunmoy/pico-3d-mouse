@@ -26,7 +26,7 @@ uf2="$repo_root/firmware/build/apps/$app/$app.uf2"
 
 if [[ ! -f "$uf2" ]]; then
     echo "flash: $uf2 not found — building firmware first..."
-    "$repo_root/build.py" --target-only
+    "$repo_root/scripts/build" --target-only
 fi
 
 echo "flash: target $uf2"

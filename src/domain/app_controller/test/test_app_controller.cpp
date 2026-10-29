@@ -89,7 +89,7 @@ namespace p3d::test
         snap.rawDelta   = { 510, -510, 5 };
 
         // Tick 1: no LED toggle yet (tickCount becomes 1, interval is 2)
-        EXPECT_CALL(serial, readCharNonBlocking()).WillOnce(Return(-1));
+        EXPECT_CALL(serial, readCharNonBlocking()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(pots, readSnapshot(_)).WillOnce(DoAll(SetArgReferee<0>(snap), Return(true)));
         EXPECT_CALL(serial, writeLine(HasSubstr("FWD_BCK(ADC0)[raw=2558")));
         EXPECT_CALL(led, write(_)).Times(0);
@@ -104,7 +104,7 @@ namespace p3d::test
         EXPECT_EQ(app.lastFrame().axes[2].scaled, 0);
 
         // Tick 2: LED toggles from true -> false
-        EXPECT_CALL(serial, readCharNonBlocking()).WillOnce(Return(-1));
+        EXPECT_CALL(serial, readCharNonBlocking()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(pots, readSnapshot(_)).WillOnce(DoAll(SetArgReferee<0>(snap), Return(true)));
         EXPECT_CALL(serial, writeLine(HasSubstr("FWD_BCK(ADC0)[raw=2558")));
         EXPECT_CALL(led, write(false)).WillOnce(Return(true));
@@ -135,7 +135,7 @@ namespace p3d::test
         snap.millivolts = { 1650, 1650, 1650 };
         snap.rawDelta   = { 0, 0, 0 };
 
-        EXPECT_CALL(serial, readCharNonBlocking()).WillOnce(Return('z'));
+        EXPECT_CALL(serial, readCharNonBlocking()).WillOnce(Return(std::optional<char>{ 'z' }));
         EXPECT_CALL(pots, calibrateCenter(16)).WillOnce(Return(true));
         EXPECT_CALL(serial, writeLine(HasSubstr("Center calibrated")));
         EXPECT_CALL(pots, readSnapshot(_)).WillOnce(DoAll(SetArgReferee<0>(snap), Return(true)));

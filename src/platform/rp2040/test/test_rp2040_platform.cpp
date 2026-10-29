@@ -86,9 +86,11 @@ namespace p3d::test
         EXPECT_TRUE(serial.init());
 
         sdk_stub::state().nextGetcharResult = PICO_ERROR_TIMEOUT;
-        EXPECT_EQ(serial.readCharNonBlocking(), -1);
+        EXPECT_FALSE(serial.readCharNonBlocking().has_value());
 
         sdk_stub::state().nextGetcharResult = 'z';
-        EXPECT_EQ(serial.readCharNonBlocking(), 'z');
+        const auto ch = serial.readCharNonBlocking();
+        ASSERT_TRUE(ch.has_value());
+        EXPECT_EQ(*ch, 'z');
     }
 }

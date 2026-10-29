@@ -3,4 +3,4 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
-exec "$repo_root/build.py" --host-only -t --asan "$@"
+exec "$repo_root/scripts/build" --host-only -t --asan "$@"

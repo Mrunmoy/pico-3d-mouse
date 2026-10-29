@@ -1,8 +1,11 @@
 #pragma once
 
+#include <optional>
+#include <string_view>
+
 namespace p3d::hal
 {
-    // Pure hardware abstraction for non-blocking console input and telemetry output.
+    // Pure C++17 hardware abstraction for non-blocking console input and line output.
     class ISerialIo
     {
     public:
@@ -10,10 +13,10 @@ namespace p3d::hal
 
         virtual bool init() = 0;
 
-        // Returns the next received character (0..255), or -1 if no character is available.
-        virtual int readCharNonBlocking() = 0;
+        // Returns the next received character if available, or std::nullopt on timeout/empty FIFO.
+        virtual std::optional<char> readCharNonBlocking() = 0;
 
-        // Writes a null-terminated string to the serial stream.
-        virtual void writeLine(const char* str) = 0;
+        // Writes a single line of text to the serial stream.
+        virtual void writeLine(std::string_view line) = 0;
     };
 }

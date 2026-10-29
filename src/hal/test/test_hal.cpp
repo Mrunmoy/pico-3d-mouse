@@ -43,13 +43,15 @@ namespace p3d::test
         EXPECT_CALL(mockGpio, init()).WillOnce(Return(true));
         EXPECT_CALL(mockGpio, write(true)).WillOnce(Return(true));
         EXPECT_CALL(mockSerial, init()).WillOnce(Return(true));
-        EXPECT_CALL(mockSerial, readCharNonBlocking()).WillOnce(Return('z'));
+        EXPECT_CALL(mockSerial, readCharNonBlocking()).WillOnce(Return(std::optional<char>{ 'z' }));
         EXPECT_CALL(mockTime, getTimestampUs()).WillOnce(Return(123456ULL));
 
         EXPECT_TRUE(gpio.init());
         EXPECT_TRUE(gpio.write(true));
         EXPECT_TRUE(serial.init());
-        EXPECT_EQ(serial.readCharNonBlocking(), 'z');
+        const auto ch = serial.readCharNonBlocking();
+        ASSERT_TRUE(ch.has_value());
+        EXPECT_EQ(*ch, 'z');
         EXPECT_EQ(time.getTimestampUs(), 123456ULL);
     }
 }

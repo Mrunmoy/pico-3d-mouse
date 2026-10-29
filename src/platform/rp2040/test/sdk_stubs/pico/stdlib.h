@@ -3,7 +3,7 @@
 #include <cstdint>
 #include "PicoSdkStubState.hpp"
 
-#define PICO_ERROR_TIMEOUT (-1)
+inline constexpr int PICO_ERROR_TIMEOUT = -1;
 
 inline bool stdio_init_all()
 {
