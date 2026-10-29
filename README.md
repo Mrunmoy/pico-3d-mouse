@@ -16,10 +16,10 @@ Self-contained RP2040 3D mouse firmware and cross-platform Qt6 MVC Manufacturing
 
 ## Key Features
 
-- **Composite USB-C 3Dconnexion SpaceNavigator (`0x046D:0xC626`)**:
-  - **Autodesk Fusion 360 & CAD Compatible** (Interface 3): Emulates the official **3Dconnexion SpaceNavigator (`VID = 0x046D`, `PID = 0xC626`)** 6-DOF Multi-Axis Controller HID descriptor (`Report ID 1`: Translation `X, Y, Z`, `Report ID 2`: Rotation `Rx, Ry, Rz` in `[-500, +500]`, `Report ID 3`: Buttons, `Report ID 4`: LED) so **3DxWare** (Fusion 360, SolidWorks, Rhino, OnShape) as well as **FreeCAD**, **Blender**, and `spacenavd` recognize the mouse natively.
-  - **USB-CDC Telemetry & Calibration Serial** (Interfaces 0 & 1): Simultaneously exposes `/dev/ttyACM0` (`COMx`) streaming live oversampled 12-bit ADC readings, millivolts, conditioned deltas, and scaled outputs, and accepting line-based calibration commands (`ZERO`, `CAL_MINMAX_START`, `CAL_MINMAX_END`, `SET_DZ`, `SET_INV`, `SAVE_CAL`, `LOAD_CAL`, `RESET_CAL`, `GET_CAL`, `BOOTSEL`).
-  - **1200-Baud & Software USB Reset Interface** (Interface 2): Supports 100% buttonless software warm-reset into USB-BOOT (`BOOTSEL`) mode without ever touching the physical button inside the enclosure.
+- **Composite USB-C 3Dconnexion SpaceMouse (`0x256F:0xC631`)**:
+  - **Windows & macOS `3DxWare 10` / Autodesk Fusion 360 Compatible** (Interface 2): Emulates the **3Dconnexion SpaceMouse Pro Wireless (cabled) (`VID = 0x256F`, `PID = 0xC631`)** 6-DOF Multi-Axis Controller HID descriptor (with both Interrupt IN and OUT endpoints, 12-byte 6-DOF `Report ID 1` in `[-350, +350]` with LSB jiggle, `Report ID 3` Buttons, and `Report ID 4` LED) so **3DxWare 10** on Windows 10/11 & macOS (Fusion 360, SolidWorks, Rhino, OnShape) as well as **FreeCAD**, **Blender**, and `spacenavd` recognize the mouse natively.
+  - **USB-CDC Telemetry & Calibration Serial** (Interfaces 0 & 1): Uses the standard inbox `usbser.sys` / `cdc_acm` driver (`/dev/ttyACM0` / `COMx`)—with zero unknown vendor interfaces in Windows Device Manager—streaming live oversampled 12-bit ADC readings, millivolts, conditioned deltas, and scaled outputs, and accepting line-based calibration commands (`ZERO`, `CAL_MINMAX_START`, `CAL_MINMAX_END`, `SET_DZ`, `SET_INV`, `SAVE_CAL`, `LOAD_CAL`, `RESET_CAL`, `GET_CAL`, `BOOTSEL`).
+  - **100% Buttonless Firmware Updates**: Triggered via the `BOOTSEL` serial command or 1200-baud USB-CDC touch without ever needing a custom vendor interface or pressing the physical button inside the enclosure.
 - **Non-Volatile QSPI Flash Calibration Store**:
   - Persists per-axis center bias, min/max mechanical travel limits, deadzone counts, and polarity inversion to the final 4 KB sector of RP2040 internal QSPI Flash, protected by a magic header, schema version, and **IEEE 802.3 CRC-32** checksum.
 - **Qt6 MVC Manufacturing Tester, Calibration & Buttonless Firmware Updater (`./scripts/ui`)**:

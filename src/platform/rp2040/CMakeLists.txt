@@ -15,7 +15,6 @@ if(P3D_BACKEND STREQUAL "rp2040")
         pico_stdio_usb
         pico_bootrom
         pico_unique_id
-        pico_usb_reset_interface
         hardware_adc
         hardware_flash
         hardware_gpio
@@ -40,7 +39,7 @@ if(P3D_BACKEND STREQUAL "rp2040")
         CFG_TUD_HID=1
         PICO_STDIO_USB_USE_DEFAULT_DESCRIPTORS=0
         PICO_STDIO_USB_ENABLE_RESET_VIA_BAUD_RATE=1
-        PICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE=1
+        PICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE=0
     )
 else()
     target_include_directories(p3d_platform_rp2040 PUBLIC

@@ -36,7 +36,7 @@ is_bootsel() {
 }
 
 is_running_cdc() {
-    lsusb | grep -Eqi "2e8a:(000a|0009)|046d:c626"
+    lsusb | grep -Eqi "2e8a:(000a|0009)|046d:c626|256f:c631"
 }
 
 trigger_serial_bootsel() {
@@ -65,7 +65,7 @@ elif is_running_cdc; then
     fi
 else
     echo "flash: no RP2040/RP2350 device found on USB" >&2
-    lsusb | grep -Ei "2e8a|046d" || true
+    lsusb | grep -Ei "2e8a|046d|256f" || true
     exit 1
 fi
 
@@ -87,7 +87,7 @@ if [[ "$capture" != "0" ]]; then
             vid=$(awk -F= '/^ID_VENDOR_ID=/  {print tolower($2)}' <<< "$props")
             pid=$(awk -F= '/^ID_MODEL_ID=/   {print tolower($2)}' <<< "$props")
             iface=$(awk -F= '/^ID_USB_INTERFACE_NUM=/ {print $2}' <<< "$props")
-            if [[ ( ( "$vid" == "2e8a" && ( "$pid" == "000a" || "$pid" == "0009" ) ) || ( "$vid" == "046d" && "$pid" == "c626" ) ) && "$iface" == "00" ]]; then
+            if [[ ( ( "$vid" == "2e8a" && ( "$pid" == "000a" || "$pid" == "0009" ) ) || ( "$vid" == "046d" && "$pid" == "c626" ) || ( "$vid" == "256f" && "$pid" == "c631" ) ) && "$iface" == "00" ]]; then
                 tty="$candidate"
                 break 2
             fi

@@ -132,6 +132,7 @@ namespace p3d::test
         hal::MotionReport6Dof r{};
         r.tx = 120;
         r.ty = -80;
+        r.rz = 200;
 
         sdk_stub::state().hidReady = false;
         EXPECT_FALSE(hid.sendMotionReport(r));
@@ -139,26 +140,22 @@ namespace p3d::test
         sdk_stub::state().hidReady = true;
         EXPECT_TRUE(hid.sendMotionReport(r));
         EXPECT_EQ(sdk_stub::state().hidReportCount, 1U);
-        EXPECT_EQ(sdk_stub::state().lastHidReportId, rp::Rp2040HidTransport::kReportIdTranslation);
+        EXPECT_EQ(sdk_stub::state().lastHidReportId, rp::Rp2040HidTransport::kReportIdMotion6Dof);
 
-        // Holding non-zero deflection continues streaming relative reports for 3DxWare / Fusion 360
+        // Holding non-zero deflection continues streaming 12-byte 6-DOF Report ID 1 with LSB jiggle
         EXPECT_TRUE(hid.sendMotionReport(r));
         EXPECT_EQ(sdk_stub::state().hidReportCount, 2U);
-        EXPECT_EQ(sdk_stub::state().lastHidReportId, rp::Rp2040HidTransport::kReportIdTranslation);
+        EXPECT_EQ(sdk_stub::state().lastHidReportId, rp::Rp2040HidTransport::kReportIdMotion6Dof);
 
-        // Simultaneous translation + rotation alternates between Report ID 1 and Report ID 2
-        r.rz = 200;
+        // Returning to center (0,0,0,0,0,0) sends 3 zero packets and then stays silent at rest
+        r = hal::MotionReport6Dof{};
         EXPECT_TRUE(hid.sendMotionReport(r));
         EXPECT_EQ(sdk_stub::state().hidReportCount, 3U);
-        EXPECT_EQ(sdk_stub::state().lastHidReportId, rp::Rp2040HidTransport::kReportIdRotation);
-
-        // Returning to center (0,0,0) sends final zero reports and then stays silent at rest
-        r = hal::MotionReport6Dof{};
-        EXPECT_TRUE(hid.sendMotionReport(r)); // zeros translation
+        EXPECT_TRUE(hid.sendMotionReport(r));
         EXPECT_EQ(sdk_stub::state().hidReportCount, 4U);
-        EXPECT_TRUE(hid.sendMotionReport(r)); // zeros rotation
+        EXPECT_TRUE(hid.sendMotionReport(r));
         EXPECT_EQ(sdk_stub::state().hidReportCount, 5U);
-        EXPECT_TRUE(hid.sendMotionReport(r)); // idle at rest -> no packet sent
+        EXPECT_TRUE(hid.sendMotionReport(r)); // 4th zero at rest -> suppressed
         EXPECT_EQ(sdk_stub::state().hidReportCount, 5U);
     }
 }

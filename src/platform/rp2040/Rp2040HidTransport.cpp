@@ -1,5 +1,6 @@
 #include "platform/rp2040/Rp2040HidTransport.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
 
@@ -12,28 +13,37 @@ namespace p3d::platform::rp2040
 {
     namespace
     {
-        void packVec3Le(std::array<std::uint8_t, 6>& buf,
-                        std::int16_t                 x,
-                        std::int16_t                 y,
-                        std::int16_t                 z)
+        std::int16_t clampAxis(std::int16_t value)
         {
-            const auto ux = static_cast<std::uint16_t>(x);
-            const auto uy = static_cast<std::uint16_t>(y);
-            const auto uz = static_cast<std::uint16_t>(z);
+            return std::clamp(value,
+                              static_cast<std::int16_t>(-Rp2040HidTransport::kMaxHidAxisValue),
+                              Rp2040HidTransport::kMaxHidAxisValue);
+        }
 
-            buf[0] = static_cast<std::uint8_t>(ux & 0xFFU);
-            buf[1] = static_cast<std::uint8_t>((ux >> 8U) & 0xFFU);
-            buf[2] = static_cast<std::uint8_t>(uy & 0xFFU);
-            buf[3] = static_cast<std::uint8_t>((uy >> 8U) & 0xFFU);
-            buf[4] = static_cast<std::uint8_t>(uz & 0xFFU);
-            buf[5] = static_cast<std::uint8_t>((uz >> 8U) & 0xFFU);
+        void packInt16Le(std::uint8_t* dst, std::int16_t value, bool jiggleBit)
+        {
+            const std::int16_t clamped = clampAxis(value);
+            auto               uval    = static_cast<std::uint16_t>(clamped);
+            if (clamped != 0)
+            {
+                if (jiggleBit)
+                {
+                    uval |= 0x0001U;
+                }
+                else
+                {
+                    uval &= static_cast<std::uint16_t>(~0x0001U);
+                }
+            }
+            dst[0] = static_cast<std::uint8_t>(uval & 0xFFU);
+            dst[1] = static_cast<std::uint8_t>((uval >> 8U) & 0xFFU);
         }
     }
 
     bool Rp2040HidTransport::init()
     {
-        m_firstReport = true;
-        m_sendRotNext = false;
+        m_zeroPacketsSent = 0U; // Send initial zero packet on startup
+        m_jiggleBit       = false;
         return true;
     }
 
@@ -49,76 +59,34 @@ namespace p3d::platform::rp2040
             return false;
         }
 
-        const bool transNonZero = (report.tx != 0) || (report.ty != 0) || (report.tz != 0);
-        const bool rotNonZero   = (report.rx != 0) || (report.ry != 0) || (report.rz != 0);
+        const bool anyNonZero =
+            (report.tx != 0) || (report.ty != 0) || (report.tz != 0) ||
+            (report.rx != 0) || (report.ry != 0) || (report.rz != 0);
 
-        const bool transChanged = m_firstReport ||
-                                  (report.tx != m_lastSent.tx) ||
-                                  (report.ty != m_lastSent.ty) ||
-                                  (report.tz != m_lastSent.tz);
-
-        const bool rotChanged = m_firstReport ||
-                                (report.rx != m_lastSent.rx) ||
-                                (report.ry != m_lastSent.ry) ||
-                                (report.rz != m_lastSent.rz);
-
-        const bool needTrans = transNonZero || transChanged;
-        const bool needRot   = rotNonZero || rotChanged;
-
-        auto sendTrans = [&]() -> bool {
-            std::array<std::uint8_t, 6> payload{};
-            packVec3Le(payload, report.tx, report.ty, report.tz);
-            if (tud_hid_report(kReportIdTranslation, payload.data(), payload.size()))
-            {
-                m_lastSent.tx = report.tx;
-                m_lastSent.ty = report.ty;
-                m_lastSent.tz = report.tz;
-                return true;
-            }
-            return false;
-        };
-
-        auto sendRot = [&]() -> bool {
-            std::array<std::uint8_t, 6> payload{};
-            packVec3Le(payload, report.rx, report.ry, report.rz);
-            if (tud_hid_report(kReportIdRotation, payload.data(), payload.size()))
-            {
-                m_lastSent.rx = report.rx;
-                m_lastSent.ry = report.ry;
-                m_lastSent.rz = report.rz;
-                return true;
-            }
-            return false;
-        };
-
-        bool sentAny = false;
-        if (needTrans && needRot)
+        if (!anyNonZero && m_zeroPacketsSent >= 3U)
         {
-            if (m_sendRotNext)
+            return true;
+        }
+
+        std::array<std::uint8_t, 12> payload{};
+        packInt16Le(&payload[0],  report.tx, m_jiggleBit);
+        packInt16Le(&payload[2],  report.ty, m_jiggleBit);
+        packInt16Le(&payload[4],  report.tz, m_jiggleBit);
+        packInt16Le(&payload[6],  report.rx, m_jiggleBit);
+        packInt16Le(&payload[8],  report.ry, m_jiggleBit);
+        packInt16Le(&payload[10], report.rz, m_jiggleBit);
+
+        if (tud_hid_report(kReportIdMotion6Dof, payload.data(), payload.size()))
+        {
+            m_jiggleBit = !m_jiggleBit;
+            if (anyNonZero)
             {
-                sentAny = sendRot();
-                m_sendRotNext = false;
+                m_zeroPacketsSent = 0U;
             }
             else
             {
-                sentAny = sendTrans();
-                m_sendRotNext = true;
+                ++m_zeroPacketsSent;
             }
-        }
-        else if (needTrans)
-        {
-            sentAny = sendTrans();
-            m_sendRotNext = true;
-        }
-        else if (needRot)
-        {
-            sentAny = sendRot();
-            m_sendRotNext = false;
-        }
-
-        if (sentAny)
-        {
-            m_firstReport = false;
         }
 
         return true;

@@ -2,7 +2,6 @@
 #include <cstdint>
 
 #include "pico/stdio_usb.h"
-#include "pico/stdio_usb/reset_interface.h"
 #include "pico/unique_id.h"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
@@ -11,20 +10,20 @@
 
 namespace
 {
-    // 3Dconnexion SpaceNavigator USB VID/PID so Autodesk Fusion 360 / 3DxWare
-    // (as well as SolidWorks, OnShape, Blender, FreeCAD, and spacenavd)
-    // automatically recognizes the device as a native 6-DOF 3D mouse.
-    constexpr std::uint16_t kUsbVid = 0x046DU;  // Logitech / 3Dconnexion
-    constexpr std::uint16_t kUsbPid = 0xC626U;  // SpaceNavigator 6-DOF 3D Mouse
+    // 3Dconnexion SpaceMouse Pro Wireless (cabled) USB VID/PID:
+    // Supported natively by current Windows 10/11 & macOS 3DxWare 10 drivers
+    // (Autodesk Fusion 360, SolidWorks, Rhino, OnShape) as well as Linux spacenavd/FreeCAD/Blender.
+    constexpr std::uint16_t kUsbVid = 0x256FU;  // 3Dconnexion
+    constexpr std::uint16_t kUsbPid = 0xC631U;  // SpaceMouse Pro Wireless (cabled)
 
-    constexpr std::uint8_t kItfCdc      = 0U;   // occupies interfaces 0 and 1
-    constexpr std::uint8_t kItfRpiReset = 2U;   // interface 2 (expected by reset_interface.c)
-    constexpr std::uint8_t kItfHid      = 3U;   // interface 3 (6-DOF 3D Mouse HID)
-    constexpr std::uint8_t kItfTotal    = 4U;
+    constexpr std::uint8_t kItfCdc   = 0U;      // occupies interfaces 0 and 1 (Windows inbox usbser.sys)
+    constexpr std::uint8_t kItfHid   = 2U;      // interface 2 (6-DOF 3Dconnexion HID IN + OUT)
+    constexpr std::uint8_t kItfTotal = 3U;
 
     constexpr std::uint8_t kEpCdcCmd = 0x81U;
     constexpr std::uint8_t kEpCdcOut = 0x02U;
     constexpr std::uint8_t kEpCdcIn  = 0x82U;
+    constexpr std::uint8_t kEpHidOut = 0x03U;
     constexpr std::uint8_t kEpHidIn  = 0x83U;
 
     constexpr std::uint8_t kStrLang    = 0U;
@@ -32,25 +31,22 @@ namespace
     constexpr std::uint8_t kStrProduct = 2U;
     constexpr std::uint8_t kStrSerial  = 3U;
     constexpr std::uint8_t kStrCdc     = 4U;
-    constexpr std::uint8_t kStrReset   = 5U;
-    constexpr std::uint8_t kStrHid     = 6U;
+    constexpr std::uint8_t kStrHid     = 5U;
 
-    // Complete 3Dconnexion SpaceNavigator (0x046D:0xC626) HID Report Descriptor
-    // required by 3DxWare (Fusion 360) and standard Multi-Axis HID consumers:
-    //   Report ID 1: Translation X, Y, Z (3 x int16, range [-500, +500])
-    //   Report ID 2: Rotation Rx, Ry, Rz (3 x int16, range [-500, +500])
-    //   Report ID 3: Buttons 1..2 (2 bits + 14 bits padding)
-    //   Report ID 4: LED Output (1 bit + 7 bits padding)
+    // 3Dconnexion SpaceMouse Pro Wireless (cabled) (0x256F:0xC631) HID Report Descriptor:
+    //   Report ID 1: 6-DOF Translation + Rotation (X, Y, Z, Rx, Ry, Rz) as 6 x int16 in [-350, +350] (12 bytes)
+    //   Report ID 3: 32 Buttons (4 bytes)
+    //   Report ID 4: LED Output (1 byte)
     const std::uint8_t kHidReportDescriptor[] = {
-        0x05U, 0x01U,              // Usage Page (Generic Desktop Ctrls)
-        0x09U, 0x08U,              // Usage (Multi-axis Controller)
+        0x05U, 0x01U,              // Usage Page (Generic Desktop)
+        0x09U, 0x08U,              // Usage (Multi-Axis Controller)
         0xA1U, 0x01U,              // Collection (Application)
 
-        // Report ID 1: Translation vector (X, Y, Z)
+        // Report ID 1: 6-DOF Translation + Rotation (X, Y, Z, Rx, Ry, Rz)
         0xA1U, 0x00U,              //   Collection (Physical)
         0x85U, 0x01U,              //     Report ID (1)
-        0x16U, 0x0CU, 0xFEU,       //     Logical Minimum (-500)
-        0x26U, 0xF4U, 0x01U,       //     Logical Maximum (+500)
+        0x16U, 0xA2U, 0xFEU,       //     Logical Minimum (-350)
+        0x26U, 0x5EU, 0x01U,       //     Logical Maximum (+350)
         0x36U, 0x88U, 0xFAU,       //     Physical Minimum (-1400)
         0x46U, 0x78U, 0x05U,       //     Physical Maximum (+1400)
         0x55U, 0x0CU,              //     Unit Exponent (-4)
@@ -58,59 +54,39 @@ namespace
         0x09U, 0x30U,              //     Usage (X)
         0x09U, 0x31U,              //     Usage (Y)
         0x09U, 0x32U,              //     Usage (Z)
-        0x75U, 0x10U,              //     Report Size (16)
-        0x95U, 0x03U,              //     Report Count (3)
-        0x81U, 0x06U,              //     Input (Data,Var,Rel)
-        0xC0U,                     //   End Collection
-
-        // Report ID 2: Rotation vector (Rx, Ry, Rz)
-        0xA1U, 0x00U,              //   Collection (Physical)
-        0x85U, 0x02U,              //     Report ID (2)
-        0x16U, 0x0CU, 0xFEU,       //     Logical Minimum (-500)
-        0x26U, 0xF4U, 0x01U,       //     Logical Maximum (+500)
-        0x36U, 0x88U, 0xFAU,       //     Physical Minimum (-1400)
-        0x46U, 0x78U, 0x05U,       //     Physical Maximum (+1400)
-        0x55U, 0x0CU,              //     Unit Exponent (-4)
-        0x65U, 0x14U,              //     Unit (English Rotation: deg)
         0x09U, 0x33U,              //     Usage (Rx)
         0x09U, 0x34U,              //     Usage (Ry)
         0x09U, 0x35U,              //     Usage (Rz)
         0x75U, 0x10U,              //     Report Size (16)
-        0x95U, 0x03U,              //     Report Count (3)
-        0x81U, 0x06U,              //     Input (Data,Var,Rel)
+        0x95U, 0x06U,              //     Report Count (6)
+        0x81U, 0x02U,              //     Input (Data,Var,Abs)
         0xC0U,                     //   End Collection
 
-        // Report ID 3: Buttons (2 buttons)
-        0xA1U, 0x02U,              //   Collection (Logical)
+        // Report ID 3: Keys (32 buttons)
+        0xA1U, 0x00U,              //   Collection (Physical)
         0x85U, 0x03U,              //     Report ID (3)
-        0x05U, 0x01U,              //     Usage Page (Generic Desktop Ctrls)
-        0x05U, 0x09U,              //     Usage Page (Button)
-        0x19U, 0x01U,              //     Usage Minimum (Button 1)
-        0x29U, 0x02U,              //     Usage Maximum (Button 2)
         0x15U, 0x00U,              //     Logical Minimum (0)
         0x25U, 0x01U,              //     Logical Maximum (1)
-        0x35U, 0x00U,              //     Physical Minimum (0)
-        0x45U, 0x01U,              //     Physical Maximum (1)
         0x75U, 0x01U,              //     Report Size (1)
-        0x95U, 0x02U,              //     Report Count (2)
+        0x95U, 0x20U,              //     Report Count (32)
+        0x05U, 0x09U,              //     Usage Page (Button)
+        0x19U, 0x01U,              //     Usage Minimum (Button 1)
+        0x29U, 0x20U,              //     Usage Maximum (Button 32)
         0x81U, 0x02U,              //     Input (Data,Var,Abs)
-        0x95U, 0x0EU,              //     Report Count (14)
-        0x81U, 0x03U,              //     Input (Const,Var,Abs)
         0xC0U,                     //   End Collection
 
-        // Report ID 4: LED Indicator Output
+        // Report ID 4: LEDs
         0xA1U, 0x02U,              //   Collection (Logical)
         0x85U, 0x04U,              //     Report ID (4)
         0x05U, 0x08U,              //     Usage Page (LEDs)
         0x09U, 0x4BU,              //     Usage (Generic Indicator)
         0x15U, 0x00U,              //     Logical Minimum (0)
         0x25U, 0x01U,              //     Logical Maximum (1)
-        0x35U, 0x00U,              //     Physical Minimum (0)
-        0x45U, 0x01U,              //     Physical Maximum (1)
-        0x75U, 0x01U,              //     Report Size (1)
         0x95U, 0x01U,              //     Report Count (1)
+        0x75U, 0x01U,              //     Report Size (1)
         0x91U, 0x02U,              //     Output (Data,Var,Abs)
-        0x95U, 0x07U,              //     Report Count (7)
+        0x95U, 0x01U,              //     Report Count (1)
+        0x75U, 0x07U,              //     Report Size (7)
         0x91U, 0x03U,              //     Output (Const,Var,Abs)
         0xC0U,                     //   End Collection
 
@@ -120,40 +96,32 @@ namespace
     const tusb_desc_device_t kDeviceDescriptor = {
         sizeof(tusb_desc_device_t),
         TUSB_DESC_DEVICE,
-#if PICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE && PICO_STDIO_USB_RESET_INTERFACE_SUPPORT_MS_OS_20_DESCRIPTOR
-        0x0210U,
-#else
         0x0200U,
-#endif
         TUSB_CLASS_MISC,
         MISC_SUBCLASS_COMMON,
         MISC_PROTOCOL_IAD,
         CFG_TUD_ENDPOINT0_SIZE,
         kUsbVid,
         kUsbPid,
-        0x0435U,
+        0x0100U,
         kStrManuf,
         kStrProduct,
         kStrSerial,
         1U
     };
 
-    constexpr std::size_t kRpiResetDescLen = 9U;
     constexpr std::size_t kConfigTotalLen =
-        TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + kRpiResetDescLen + TUD_HID_DESC_LEN;
+        TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_HID_INOUT_DESC_LEN;
 
     const std::uint8_t kConfigurationDescriptor[kConfigTotalLen] = {
         TUD_CONFIG_DESCRIPTOR(1, kItfTotal, kStrLang, kConfigTotalLen, 0x00, 250),
 
+        // Interfaces 0 & 1: USB-CDC Serial for calibration & 1200-baud buttonless BOOTSEL
         TUD_CDC_DESCRIPTOR(kItfCdc, kStrCdc, kEpCdcCmd, 8, kEpCdcOut, kEpCdcIn, 64),
 
-        // Raspberry Pi Vendor Reset interface (interface 2) for buttonless picotool flashing
-        9, TUSB_DESC_INTERFACE, kItfRpiReset, 0, 0, TUSB_CLASS_VENDOR_SPECIFIC,
-        RESET_INTERFACE_SUBCLASS, RESET_INTERFACE_PROTOCOL, kStrReset,
-
-        // 6-DOF 3D Mouse HID interface (interface 3)
-        TUD_HID_DESCRIPTOR(kItfHid, kStrHid, HID_ITF_PROTOCOL_NONE,
-                           sizeof(kHidReportDescriptor), kEpHidIn, 16, 5)
+        // Interface 2: 6-DOF 3Dconnexion SpaceMouse HID (both IN and OUT interrupt endpoints required by Windows 3DxWare)
+        TUD_HID_INOUT_DESCRIPTOR(kItfHid, kStrHid, HID_ITF_PROTOCOL_NONE,
+                                 sizeof(kHidReportDescriptor), kEpHidOut, kEpHidIn, 32, 8)
     };
 
     char g_serialStr[PICO_UNIQUE_BOARD_ID_SIZE_BYTES * 2 + 1]{};
@@ -161,11 +129,10 @@ namespace
     const char* const kStringDescriptors[] = {
         "",
         "3Dconnexion",
-        "SpaceNavigator",
+        "SpaceMouse Pro Wireless (cabled)",
         g_serialStr,
         "pico-3d-mouse Telemetry & Calibration CDC",
-        "RP2040 Reset",
-        "SpaceNavigator 6-DOF HID"
+        "SpaceMouse Pro Wireless (cabled)"
     };
 }
 
@@ -200,13 +167,13 @@ extern "C"
         {
             buffer[i] = 0U;
         }
-        if ((report_id == 1U || report_id == 2U) && reqlen >= 6U)
+        if (report_id == 1U && reqlen >= 12U)
         {
-            return 6U;
+            return 12U;
         }
-        if (report_id == 3U && reqlen >= 2U)
+        if (report_id == 3U && reqlen >= 4U)
         {
-            return 2U;
+            return 4U;
         }
         return reqlen;
     }
