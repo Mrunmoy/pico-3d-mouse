@@ -1,11 +1,15 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <vector>
 
 namespace p3d::test::sdk_stub
 {
+    inline constexpr std::size_t kStubFlashSectorSize = 4096;
+
     struct State
     {
         bool                       adcInitialized      = false;
@@ -25,6 +29,20 @@ namespace p3d::test::sdk_stub
 
         bool                       stdioInitResult     = true;
         int                        nextGetcharResult   = -1;
+
+        bool                       bootloaderEntered   = false;
+        std::uint32_t              flashEraseCount     = 0;
+        std::uint32_t              flashProgramCount   = 0;
+        std::array<std::uint8_t, kStubFlashSectorSize> flashSector{};
+
+        bool                       hidReady            = true;
+        std::uint32_t              hidReportCount      = 0;
+        std::uint8_t               lastHidReportId     = 0;
+
+        State()
+        {
+            flashSector.fill(0xFFU);
+        }
     };
 
     inline State& state()

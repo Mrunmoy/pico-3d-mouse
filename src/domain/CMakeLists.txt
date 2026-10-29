@@ -1,2 +1,4 @@
 add_subdirectory(axis_processor)
+add_subdirectory(calibration_store)
+add_subdirectory(command_parser)
 add_subdirectory(app_controller)

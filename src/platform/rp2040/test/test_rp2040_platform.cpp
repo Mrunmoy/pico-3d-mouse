@@ -1,12 +1,16 @@
 #include "platform/rp2040/BoardPins.hpp"
 #include "platform/rp2040/Rp2040AdcHardware.hpp"
+#include "platform/rp2040/Rp2040BootControl.hpp"
+#include "platform/rp2040/Rp2040FlashStorage.hpp"
 #include "platform/rp2040/Rp2040GpioOutput.hpp"
+#include "platform/rp2040/Rp2040HidTransport.hpp"
 #include "platform/rp2040/Rp2040TimeProvider.hpp"
 #include "platform/rp2040/Rp2040UsbSerialIo.hpp"
 
 #include "PicoSdkStubState.hpp"
 #include "pico/stdlib.h"
 
+#include <array>
 #include <gtest/gtest.h>
 
 namespace p3d::test
@@ -26,10 +30,10 @@ namespace p3d::test
     {
         rp::Rp2040AdcHardware adc{};
 
-        EXPECT_TRUE(adc.initChannel(0));  // GP26 (Forward/Backward)
-        EXPECT_TRUE(adc.initChannel(1));  // GP27 (Left/Right)
-        EXPECT_TRUE(adc.initChannel(2));  // GP28 (Rotation)
-        EXPECT_FALSE(adc.initChannel(3)); // Out of range
+        EXPECT_TRUE(adc.initChannel(0));
+        EXPECT_TRUE(adc.initChannel(1));
+        EXPECT_TRUE(adc.initChannel(2));
+        EXPECT_FALSE(adc.initChannel(3));
 
         EXPECT_TRUE(sdk_stub::state().adcInitialized);
         ASSERT_EQ(sdk_stub::state().adcInitializedGpios.size(), 3U);
@@ -92,5 +96,59 @@ namespace p3d::test
         const auto ch = serial.readCharNonBlocking();
         ASSERT_TRUE(ch.has_value());
         EXPECT_EQ(*ch, 'z');
+    }
+
+    TEST_F(Rp2040PlatformTest, FlashStorageErasesSectorProgramsPageAndReadsBack)
+    {
+        rp::Rp2040FlashStorage flash{};
+
+        std::array<std::uint8_t, 8> payload{ 1, 2, 3, 4, 5, 6, 7, 8 };
+        ASSERT_TRUE(flash.write(payload.data(), payload.size()));
+        EXPECT_EQ(sdk_stub::state().flashEraseCount, 1U);
+        EXPECT_EQ(sdk_stub::state().flashProgramCount, 1U);
+
+        std::array<std::uint8_t, 8> readBack{};
+        ASSERT_TRUE(flash.read(readBack.data(), readBack.size()));
+        EXPECT_EQ(readBack, payload);
+
+        EXPECT_FALSE(flash.write(nullptr, 8));
+        EXPECT_FALSE(flash.read(nullptr, 8));
+        EXPECT_FALSE(flash.write(payload.data(), 1024));
+    }
+
+    TEST_F(Rp2040PlatformTest, BootControlCallsResetUsbBoot)
+    {
+        rp::Rp2040BootControl boot{};
+        EXPECT_FALSE(sdk_stub::state().bootloaderEntered);
+        boot.enterBootloader();
+        EXPECT_TRUE(sdk_stub::state().bootloaderEntered);
+    }
+
+    TEST_F(Rp2040PlatformTest, HidTransportSendsReportsOnlyWhenReadyAndChanged)
+    {
+        rp::Rp2040HidTransport hid{};
+        EXPECT_TRUE(hid.init());
+
+        hal::MotionReport6Dof r{};
+        r.tx = 120;
+        r.ty = -80;
+
+        sdk_stub::state().hidReady = false;
+        EXPECT_FALSE(hid.sendMotionReport(r));
+
+        sdk_stub::state().hidReady = true;
+        EXPECT_TRUE(hid.sendMotionReport(r));
+        EXPECT_EQ(sdk_stub::state().hidReportCount, 1U);
+        EXPECT_EQ(sdk_stub::state().lastHidReportId, rp::Rp2040HidTransport::kReportIdTranslation);
+
+        // Sending identical report again should not re-transmit redundant packet
+        EXPECT_TRUE(hid.sendMotionReport(r));
+        EXPECT_EQ(sdk_stub::state().hidReportCount, 1U);
+
+        // Changing rotation sends Report ID 2
+        r.rz = 200;
+        EXPECT_TRUE(hid.sendMotionReport(r));
+        EXPECT_EQ(sdk_stub::state().hidReportCount, 2U);
+        EXPECT_EQ(sdk_stub::state().lastHidReportId, rp::Rp2040HidTransport::kReportIdRotation);
     }
 }

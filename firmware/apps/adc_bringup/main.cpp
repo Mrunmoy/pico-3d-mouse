@@ -8,11 +8,15 @@
 //   - Potentiometer GND  : AGND (Pin 33)
 
 #include "domain/AppController.hpp"
+#include "domain/CalibrationStore.hpp"
 #include "drivers/OversampledAdcChannel.hpp"
 #include "drivers/PotentiometerArray.hpp"
 #include "platform/rp2040/BoardPins.hpp"
 #include "platform/rp2040/Rp2040AdcHardware.hpp"
+#include "platform/rp2040/Rp2040BootControl.hpp"
+#include "platform/rp2040/Rp2040FlashStorage.hpp"
 #include "platform/rp2040/Rp2040GpioOutput.hpp"
+#include "platform/rp2040/Rp2040HidTransport.hpp"
 #include "platform/rp2040/Rp2040TimeProvider.hpp"
 #include "platform/rp2040/Rp2040UsbSerialIo.hpp"
 
@@ -25,6 +29,9 @@ int main()
     rp::Rp2040GpioOutput   statusLed{ rp::pins::kStatusLedGpio };
     rp::Rp2040UsbSerialIo  serial{};
     rp::Rp2040TimeProvider time{};
+    rp::Rp2040FlashStorage flashStorage{};
+    rp::Rp2040HidTransport hidTransport{};
+    rp::Rp2040BootControl  bootControl{};
 
     // ── Oversampled ADC channel readers ──────────────────────────
     p3d::drivers::OversampledAdcChannel fwdBackAdc{
@@ -38,6 +45,7 @@ int main()
     };
 
     p3d::drivers::PotentiometerArray pots{ fwdBackAdc, leftRightAdc, rotationAdc };
+    p3d::domain::CalibrationStore    calStore{ flashStorage };
 
     // ── Application controller ───────────────────────────────────
     p3d::domain::AppConfig cfg{};
@@ -54,7 +62,9 @@ int main()
         ax.invert              = false;
     }
 
-    p3d::domain::AppController app{ pots, statusLed, serial, time, cfg };
+    p3d::domain::AppController app{
+        pots, calStore, hidTransport, bootControl, statusLed, serial, time, cfg
+    };
 
     (void)app.start();
 

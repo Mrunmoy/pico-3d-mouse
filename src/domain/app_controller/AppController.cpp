@@ -1,5 +1,6 @@
 #include "domain/AppController.hpp"
 
+#include <algorithm>
 #include <array>
 #include <charconv>
 #include <cstddef>
@@ -24,7 +25,7 @@ namespace p3d::domain
                 }
             }
 
-            void appendUnsigned(std::uint16_t value, std::size_t width = 4)
+            void appendUnsigned(std::uint16_t value, std::size_t width = 0)
             {
                 std::array<char, 16> tmp{};
                 const auto res = std::to_chars(tmp.data(), tmp.data() + tmp.size(), value);
@@ -80,17 +81,23 @@ namespace p3d::domain
             }
 
         private:
-            std::array<char, 224> m_buf{};
+            std::array<char, 240> m_buf{};
             std::size_t           m_len = 0;
         };
     }
 
     AppController::AppController(drivers::IPotentiometerSensor& pots,
+                                 ICalibrationStore&             calStore,
+                                 hal::IHidTransport&            hid,
+                                 hal::IBootControl&             boot,
                                  hal::IGpioOutput&              statusLed,
                                  hal::ISerialIo&                serial,
                                  hal::ITimeProvider&            time,
                                  const AppConfig&               cfg)
         : m_pots(pots)
+        , m_calStore(calStore)
+        , m_hid(hid)
+        , m_boot(boot)
         , m_statusLed(statusLed)
         , m_serial(serial)
         , m_time(time)
@@ -101,11 +108,20 @@ namespace p3d::domain
               AxisProcessor(cfg.axisConfigs[2]),
           }
     {
+        for (std::size_t i = 0; i < drivers::kNumPotAxes; ++i)
+        {
+            m_calData.deadzoneCounts[i] = cfg.axisConfigs[i].deadzoneCounts;
+            m_calData.invert[i]         = cfg.axisConfigs[i].invert;
+        }
     }
 
     bool AppController::start()
     {
         if (!m_serial.init())
+        {
+            return false;
+        }
+        if (!m_hid.init())
         {
             return false;
         }
@@ -125,34 +141,40 @@ namespace p3d::domain
 
         m_time.delayMs(m_cfg.startupSettleMs);
 
-        if (!m_pots.calibrateCenter(m_cfg.calibrationSweeps))
+        CalibrationData loaded{};
+        if (m_calStore.load(loaded))
         {
-            return false;
+            m_calData = loaded;
+            applyCalibrationToProcessors();
+            emitCalibrationStatus("LOADED");
         }
-
-        for (auto& proc : m_processors)
-        {
-            proc.reset();
-        }
-
-        emitCalibrationBanner();
-        return true;
-    }
-
-    bool AppController::tick()
-    {
-        const std::optional<char> cmd = m_serial.readCharNonBlocking();
-        if (cmd.has_value() && (*cmd == 'z' || *cmd == 'Z'))
+        else
         {
             if (!m_pots.calibrateCenter(m_cfg.calibrationSweeps))
             {
                 return false;
             }
-            for (auto& proc : m_processors)
+            m_calData.centerCounts = m_pots.centerCounts();
+            applyCalibrationToProcessors();
+            emitCalibrationStatus("CENTER_CALIBRATED");
+        }
+
+        return true;
+    }
+
+    bool AppController::tick()
+    {
+        m_hid.task();
+
+        while (const std::optional<char> ch = m_serial.readCharNonBlocking())
+        {
+            if (const std::optional<Command> cmd = m_cmdParser.feed(*ch))
             {
-                proc.reset();
+                if (!handleCommand(*cmd))
+                {
+                    return false;
+                }
             }
-            emitCalibrationBanner();
         }
 
         if (!m_pots.readSnapshot(m_lastFrame.raw))
@@ -162,8 +184,32 @@ namespace p3d::domain
 
         for (std::size_t i = 0; i < drivers::kNumPotAxes; ++i)
         {
-            m_lastFrame.axes[i] = m_processors[i].process(m_lastFrame.raw.rawDelta[i]);
+            const std::uint16_t raw = m_lastFrame.raw.rawCounts[i];
+
+            if (m_capturingMinMax)
+            {
+                m_calData.minCounts[i] = std::min(m_calData.minCounts[i], raw);
+                m_calData.maxCounts[i] = std::max(m_calData.maxCounts[i], raw);
+            }
+
+            const std::int16_t delta = static_cast<std::int16_t>(
+                static_cast<std::int32_t>(raw) -
+                static_cast<std::int32_t>(m_calData.centerCounts[i]));
+
+            m_lastFrame.raw.rawDelta[i] = delta;
+            m_lastFrame.axes[i]         = m_processors[i].process(delta);
         }
+
+        // Map conditioned 3-axis joystick to 6-DOF report:
+        //   ADC0 (Index 0) = Forward/Backward -> ty
+        //   ADC1 (Index 1) = Left/Right       -> tx
+        //   ADC2 (Index 2) = Rotation (Twist) -> rz
+        m_lastFrame.hidReport = hal::MotionReport6Dof{};
+        m_lastFrame.hidReport.ty = m_lastFrame.axes[0].scaled;
+        m_lastFrame.hidReport.tx = m_lastFrame.axes[1].scaled;
+        m_lastFrame.hidReport.rz = m_lastFrame.axes[2].scaled;
+
+        (void)m_hid.sendMotionReport(m_lastFrame.hidReport);
 
         FixedLineBuffer line{};
         line.appendAxis("FWD_BCK(ADC0)",
@@ -199,17 +245,159 @@ namespace p3d::domain
         return true;
     }
 
-    void AppController::emitCalibrationBanner()
+    bool AppController::handleCommand(const Command& cmd)
     {
-        const auto& c = m_pots.centerCounts();
-        FixedLineBuffer banner{};
-        banner.append("[pico-3d-mouse] Center calibrated: FWD_BCK(ADC0/GP26)=");
-        banner.appendUnsigned(c[0], 4);
-        banner.append("  LFT_RGT(ADC1/GP27)=");
-        banner.appendUnsigned(c[1], 4);
-        banner.append("  ROT(ADC2/GP28)=");
-        banner.appendUnsigned(c[2], 4);
-        banner.append("  (press 'z' to re-zero)");
-        m_serial.writeLine(banner.view());
+        switch (cmd.type)
+        {
+            case CommandType::CalibrateCenter:
+            {
+                if (!m_pots.calibrateCenter(m_cfg.calibrationSweeps))
+                {
+                    return false;
+                }
+                m_calData.centerCounts = m_pots.centerCounts();
+                applyCalibrationToProcessors();
+                emitCalibrationStatus("CENTER_CALIBRATED");
+                return true;
+            }
+            case CommandType::StartMinMaxCapture:
+            {
+                m_capturingMinMax = true;
+                for (std::size_t i = 0; i < drivers::kNumPotAxes; ++i)
+                {
+                    const std::uint16_t c = m_calData.centerCounts[i];
+                    m_calData.minCounts[i] = (c > 0U) ? static_cast<std::uint16_t>(c - 1U) : 0U;
+                    m_calData.maxCounts[i] = (c < 4095U) ? static_cast<std::uint16_t>(c + 1U) : 4095U;
+                }
+                m_serial.writeLine("@CAL MINMAX_CAPTURE_STARTED");
+                return true;
+            }
+            case CommandType::EndMinMaxCapture:
+            {
+                m_capturingMinMax = false;
+                applyCalibrationToProcessors();
+                emitCalibrationStatus("MINMAX_CAPTURED");
+                return true;
+            }
+            case CommandType::SetDeadzone:
+            {
+                if (cmd.axisIndex < drivers::kNumPotAxes)
+                {
+                    m_calData.deadzoneCounts[cmd.axisIndex] = cmd.uintParam;
+                    applyCalibrationToProcessors();
+                    emitCalibrationStatus("DEADZONE_UPDATED");
+                }
+                return true;
+            }
+            case CommandType::SetInvert:
+            {
+                if (cmd.axisIndex < drivers::kNumPotAxes)
+                {
+                    m_calData.invert[cmd.axisIndex] = cmd.boolParam;
+                    applyCalibrationToProcessors();
+                    emitCalibrationStatus("INVERT_UPDATED");
+                }
+                return true;
+            }
+            case CommandType::SaveCalibration:
+            {
+                if (m_calStore.save(m_calData))
+                {
+                    emitCalibrationStatus("SAVED_OK");
+                }
+                else
+                {
+                    m_serial.writeLine("@CAL SAVE_ERR");
+                }
+                return true;
+            }
+            case CommandType::LoadCalibration:
+            {
+                CalibrationData loaded{};
+                if (m_calStore.load(loaded))
+                {
+                    m_calData = loaded;
+                    applyCalibrationToProcessors();
+                    emitCalibrationStatus("LOADED");
+                }
+                else
+                {
+                    m_serial.writeLine("@CAL LOAD_ERR");
+                }
+                return true;
+            }
+            case CommandType::ResetDefaults:
+            {
+                m_calData = CalibrationData{};
+                if (!m_pots.calibrateCenter(m_cfg.calibrationSweeps))
+                {
+                    return false;
+                }
+                m_calData.centerCounts = m_pots.centerCounts();
+                applyCalibrationToProcessors();
+                emitCalibrationStatus("RESET_DEFAULTS");
+                return true;
+            }
+            case CommandType::QueryCalibration:
+            {
+                emitCalibrationStatus("STATUS");
+                return true;
+            }
+            case CommandType::EnterBootloader:
+            {
+                m_serial.writeLine("@BOOT ENTERING_BOOTSEL");
+                m_boot.enterBootloader();
+                return true;
+            }
+        }
+        return true;
+    }
+
+    void AppController::applyCalibrationToProcessors()
+    {
+        for (std::size_t i = 0; i < drivers::kNumPotAxes; ++i)
+        {
+            AxisConfig cfg = m_cfg.axisConfigs[i];
+            cfg.deadzoneCounts = m_calData.deadzoneCounts[i];
+            cfg.invert         = m_calData.invert[i];
+
+            const std::uint16_t posSpan = (m_calData.maxCounts[i] > m_calData.centerCounts[i])
+                ? static_cast<std::uint16_t>(m_calData.maxCounts[i] - m_calData.centerCounts[i])
+                : 1U;
+            const std::uint16_t negSpan = (m_calData.centerCounts[i] > m_calData.minCounts[i])
+                ? static_cast<std::uint16_t>(m_calData.centerCounts[i] - m_calData.minCounts[i])
+                : 1U;
+            const std::uint16_t maxSpan = std::max(posSpan, negSpan);
+            cfg.maxDeflectionCounts = (maxSpan > cfg.deadzoneCounts)
+                ? static_cast<std::uint16_t>(maxSpan - cfg.deadzoneCounts)
+                : 1U;
+
+            m_processors[i].setConfig(cfg);
+            m_processors[i].reset();
+        }
+    }
+
+    void AppController::emitCalibrationStatus(std::string_view tag)
+    {
+        FixedLineBuffer line{};
+        line.append("@CAL ");
+        line.append(tag);
+        for (std::size_t i = 0; i < drivers::kNumPotAxes; ++i)
+        {
+            line.append(" CH");
+            line.appendUnsigned(static_cast<std::uint16_t>(i));
+            line.append("[c=");
+            line.appendUnsigned(m_calData.centerCounts[i]);
+            line.append(" min=");
+            line.appendUnsigned(m_calData.minCounts[i]);
+            line.append(" max=");
+            line.appendUnsigned(m_calData.maxCounts[i]);
+            line.append(" dz=");
+            line.appendUnsigned(m_calData.deadzoneCounts[i]);
+            line.append(" inv=");
+            line.appendUnsigned(m_calData.invert[i] ? 1U : 0U);
+            line.append("]");
+        }
+        m_serial.writeLine(line.view());
     }
 }
