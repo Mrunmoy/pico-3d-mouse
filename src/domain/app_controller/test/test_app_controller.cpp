@@ -149,9 +149,9 @@ namespace p3d::test
         ASSERT_TRUE(app.tick());
         EXPECT_EQ(app.lastFrame().hidReport.tx, -250);
         EXPECT_EQ(app.lastFrame().hidReport.ty, 250);
-        EXPECT_EQ(app.lastFrame().hidReport.tz, 100);
-        EXPECT_EQ(app.lastFrame().hidReport.rx, 250);
-        EXPECT_EQ(app.lastFrame().hidReport.ry, -250);
+        EXPECT_EQ(app.lastFrame().hidReport.tz, 0);
+        EXPECT_EQ(app.lastFrame().hidReport.rx, 0);
+        EXPECT_EQ(app.lastFrame().hidReport.ry, 0);
         EXPECT_EQ(app.lastFrame().hidReport.rz, 100);
 
         // Tick 2: toggles status LED

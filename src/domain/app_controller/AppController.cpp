@@ -200,18 +200,13 @@ namespace p3d::domain
             m_lastFrame.axes[i]         = m_processors[i].process(delta);
         }
 
-        // Map conditioned 3-axis joystick to all 6-DOF SpaceMouse axes so both
-        // 3D translation (Pan/Zoom: tx, ty, tz) and 3D rotation (Orbit: rx, ry, rz)
-        // are active in 3DxWare, Fusion 360, SolidWorks, xvalue, and xcube:
-        //   ADC0 (Index 0) = Forward/Backward -> ty (Zoom/Fwd-Back) & rx (Pitch Orbit)
-        //   ADC1 (Index 1) = Left/Right       -> tx (Left-Right Pan) & ry (Roll Orbit)
-        //   ADC2 (Index 2) = Rotation (Twist) -> tz (Up-Down Pan)    & rz (Yaw Twist)
+        // Map conditioned 3-axis joystick to 6-DOF report (Pan/Zoom + Twist):
+        //   ADC0 (Index 0) = Forward/Backward -> ty (Forward/Backward Zoom)
+        //   ADC1 (Index 1) = Left/Right       -> tx (Left/Right Pan)
+        //   ADC2 (Index 2) = Rotation (Twist) -> rz (Yaw Twist)
         m_lastFrame.hidReport = hal::MotionReport6Dof{};
-        m_lastFrame.hidReport.tx = m_lastFrame.axes[1].scaled;
         m_lastFrame.hidReport.ty = m_lastFrame.axes[0].scaled;
-        m_lastFrame.hidReport.tz = m_lastFrame.axes[2].scaled;
-        m_lastFrame.hidReport.rx = m_lastFrame.axes[0].scaled;
-        m_lastFrame.hidReport.ry = m_lastFrame.axes[1].scaled;
+        m_lastFrame.hidReport.tx = m_lastFrame.axes[1].scaled;
         m_lastFrame.hidReport.rz = m_lastFrame.axes[2].scaled;
 
         (void)m_hid.sendMotionReport(m_lastFrame.hidReport);
