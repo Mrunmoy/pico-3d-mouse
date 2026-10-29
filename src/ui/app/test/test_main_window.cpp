@@ -83,7 +83,7 @@ namespace p3d::ui
                 EXPECT_CALL(serial, disconnectPort()).Times(1);
                 EXPECT_CALL(
                     updater,
-                    startUpdate(QString("firmware/build/apps/adc_bringup/adc_bringup.uf2")))
+                    startUpdate(QString("firmware/build/apps/pico_3d_mouse/pico_3d_mouse.uf2")))
                     .WillOnce(Return(true));
             }
             window.firmwareUpdaterWidget()->flashButton()->click();

@@ -2,11 +2,11 @@
 # Autonomous flash + optional serial-capture helper for pico-3d-mouse (RP2040).
 #
 # Usage:
-#   ./scripts/flash [app-name=adc_bringup] [capture-seconds=0]
+#   ./scripts/flash [app-name=pico_3d_mouse] [capture-seconds=0]
 #
 # Examples:
 #   ./scripts/flash
-#   ./scripts/flash adc_bringup 5
+#   ./scripts/flash pico_3d_mouse 5
 #
 # Self-contained: automatically enters `nix develop` if `picotool` is not on PATH,
 # and builds the target UF2 if not yet built.
@@ -19,7 +19,7 @@ if ! command -v picotool >/dev/null 2>&1; then
     exec nix develop "$repo_root" --command "$0" "$@"
 fi
 
-app="${1:-adc_bringup}"
+app="${1:-pico_3d_mouse}"
 capture="${2:-0}"
 
 uf2="$repo_root/firmware/build/apps/$app/$app.uf2"

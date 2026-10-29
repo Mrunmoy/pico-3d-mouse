@@ -22,7 +22,7 @@ namespace p3d::ui
         pathRow->addWidget(new QLabel(QStringLiteral("UF2 Image:"), group));
         m_pathEdit = new QLineEdit(group);
         m_pathEdit->setPlaceholderText(
-            QStringLiteral("firmware/build/apps/adc_bringup/adc_bringup.uf2"));
+            QStringLiteral("firmware/build/apps/pico_3d_mouse/pico_3d_mouse.uf2"));
         m_browseBtn = new QPushButton(QStringLiteral("Browse..."), group);
         pathRow->addWidget(m_pathEdit, 1);
         pathRow->addWidget(m_browseBtn);

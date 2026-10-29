@@ -78,7 +78,7 @@ namespace p3d::ui
         m_fwWidget     = new FirmwareUpdaterWidget(central);
 
         const QString defaultUf2 =
-            QStringLiteral("firmware/build/apps/adc_bringup/adc_bringup.uf2");
+            QStringLiteral("firmware/build/apps/pico_3d_mouse/pico_3d_mouse.uf2");
         m_fwWidget->setUf2FilePath(defaultUf2);
 
         rightCol->addWidget(m_calPanel);

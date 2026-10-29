@@ -32,4 +32,4 @@ set(P3D_BUILD_TESTS OFF CACHE BOOL "Disable host unit tests on target build" FOR
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../src ${CMAKE_CURRENT_BINARY_DIR}/src)
 
 # ── Applications ─────────────────────────────────────────────────
-add_subdirectory(apps/adc_bringup)
+add_subdirectory(apps/pico_3d_mouse)

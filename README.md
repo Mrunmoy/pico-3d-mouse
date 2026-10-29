@@ -107,7 +107,7 @@ Every module directory under `src/` owns its `CMakeLists.txt`, public `include/`
 │       └── app/                                    # MainWindow + pico_3d_mouse_ui executable + test/
 └── firmware/
     ├── CMakeLists.txt                              # RP2040 cross-compilation entry point
-    └── apps/adc_bringup/                           # RP2040 composition root -> adc_bringup.uf2
+    └── apps/pico_3d_mouse/                         # RP2040 composition root -> pico_3d_mouse.uf2
 ```
 
 ## Quick Start (Zero External Dependencies)
@@ -122,7 +122,7 @@ All compilers (`g++`, `arm-none-eabi-gcc`), `pico-sdk 2.2.0` (with TinyUSB submo
 ./scripts/build
 
 # 3. Flash the connected Pico over USB-C (100% buttonless) and capture 5s of telemetry
-./scripts/flash adc_bringup 5
+./scripts/flash pico_3d_mouse 5
 
 # 4. Launch the Qt6 MVC Manufacturing Tester, Calibration & Buttonless Firmware Updater UI
 ./scripts/ui /dev/ttyACM0
