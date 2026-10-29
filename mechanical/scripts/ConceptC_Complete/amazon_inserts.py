@@ -1,6 +1,6 @@
 """Update the single master for 3DZWMAN M3 x L4 x D4.2 heat-set inserts."""
 import adsk.core, adsk.fusion, os, json, traceback, importlib.util, math
-ROOT=r'D:\github\fusion360\space-mouse'
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'))
 OUT=os.path.join(ROOT,'output','two-piece')
 
 def run(req):

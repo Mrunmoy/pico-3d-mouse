@@ -1,6 +1,6 @@
 """Inventory cloud documents; delete only explicitly approved obsolete mouse IDs."""
 import adsk.core, os, json, traceback
-ROOT = r'D:\github\fusion360\space-mouse'
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'))
 OUT = os.path.join(ROOT, 'output', 'revision2')
 
 def run(context):

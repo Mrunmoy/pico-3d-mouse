@@ -1,6 +1,6 @@
 """Four corner-region fasteners, clear of joystick and TPU feet."""
 import adsk.core,adsk.fusion,os,json,math,traceback,importlib.util
-ROOT=r'D:\github\fusion360\space-mouse';OUT=os.path.join(ROOT,'output','two-piece')
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'));OUT=os.path.join(ROOT,'output','two-piece')
 V=adsk.core.ValueInput.createByString;P=adsk.core.Point3D.create
 NEW=adsk.fusion.FeatureOperations.NewBodyFeatureOperation;JOIN=adsk.fusion.FeatureOperations.JoinFeatureOperation;CUT=adsk.fusion.FeatureOperations.CutFeatureOperation
 MOUNTS=[dict(x=-28,y=-26,seat=26,length=30),dict(x=-23.5,y=41,seat=31,length=35),dict(x=37,y=30,seat=21,length=25),dict(x=37,y=-10,seat=21,length=25)]

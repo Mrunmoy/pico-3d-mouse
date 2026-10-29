@@ -1,6 +1,6 @@
 """Two-piece tray and registered palm cap. Updates only the separate split concept."""
 import adsk.core, adsk.fusion, math, json, os, traceback
-ROOT=r'D:\github\fusion360\space-mouse'
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'))
 OUT=os.path.join(ROOT,'output','two-piece')
 V=adsk.core.ValueInput.createByString
 P=adsk.core.Point3D.create

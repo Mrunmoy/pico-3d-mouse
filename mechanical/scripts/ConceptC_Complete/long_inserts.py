@@ -1,6 +1,6 @@
 """Adapt only the corrected palm cap to user-owned M3 x 5.7 x 4.6 inserts."""
 import adsk.core,adsk.fusion,os,json,traceback,importlib.util,math
-ROOT=r'D:\github\fusion360\space-mouse';OUT=os.path.join(ROOT,'output','two-piece')
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'));OUT=os.path.join(ROOT,'output','two-piece')
 def run(req):
  r=json.load(open(os.path.join(OUT,'report.json')));r.pop('error',None)
  try:

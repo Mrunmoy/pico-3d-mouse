@@ -1,6 +1,6 @@
 """Separate split-shell engineering concept; never replaces the reviewed master."""
 import adsk.core,adsk.fusion,os,json,math,traceback
-ROOT=r'D:\github\fusion360\space-mouse';OUT=os.path.join(ROOT,'output','split-concept')
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'));OUT=os.path.join(ROOT,'output','split-concept')
 P=adsk.core.Point3D.create;V=adsk.core.ValueInput.createByString
 def col(items):
     c=adsk.core.ObjectCollection.create()

@@ -1,0 +1,15 @@
+{
+  "complete": true,
+  "source": "output/two-piece/SpaceMouse_TwoPiece.f3d",
+  "source_cloud_version": 7,
+  "views": [
+    "front.png",
+    "rear.png",
+    "left.png",
+    "right.png",
+    "top.png",
+    "bottom.png",
+    "assembled.png"
+  ],
+  "geometry_changed": false
+}

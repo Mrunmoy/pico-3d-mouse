@@ -1,6 +1,6 @@
 """Verify the saved R2 cloud master, refresh local archive, close extra tabs."""
 import adsk.core, adsk.fusion, json, os, traceback
-ROOT = r'D:\github\fusion360\space-mouse'
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'))
 OUT = os.path.join(ROOT, 'output', 'revision2')
 
 def run(context):

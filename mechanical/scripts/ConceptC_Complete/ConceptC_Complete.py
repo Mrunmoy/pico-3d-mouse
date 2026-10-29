@@ -1,7 +1,7 @@
 """Concept C complete prototype CAD. Execute inside Fusion 360."""
 import adsk.core, adsk.fusion, os, math, json, traceback, struct
 
-ROOT=r'D:\github\fusion360\space-mouse'
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'))
 OUT=os.path.join(ROOT,'output','complete')
 V=adsk.core.ValueInput.createByString
 P=adsk.core.Point3D.create

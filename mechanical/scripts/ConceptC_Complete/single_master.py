@@ -1,6 +1,6 @@
 """Keep the current two-piece cloud document; remove the explicitly obsolete R2."""
 import adsk.core, adsk.fusion, json, os, traceback
-ROOT=r'D:\github\fusion360\space-mouse'
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'))
 KEEP='urn:adsk.wipprod:dm.lineage:Oa1GpTwQR8iVvi6D4SRQIg'
 OLD='urn:adsk.wipprod:dm.lineage:BfuyUQ4XTJGKQyfE52KnBw'
 

@@ -1,0 +1,3 @@
+# Mechanical work
+
+Use this repository as the authoritative workspace. Read README.md and output/two-piece/README.md before editing. The current native master is output/two-piece/SpaceMouse_TwoPiece.f3d; older outputs are historical. Preserve left-handed layout and the single SpaceMouse cloud master. Never modify Deskmate files. Do not send print jobs without explicit current user authorization. Update CAD, print exports, validation evidence and docs/images gallery together when geometry changes. Scripts resolve paths relative to this folder. Physical hardware feedback supersedes the original brief; actual joystick has three potentiometers. Do not blindly dispatch historical cleanup/rebuild requests. Commit changes locally; publishing requires user intent.

@@ -1,6 +1,6 @@
 """Continuous shoulder revision. Trial locally first; apply=True updates the single master."""
 import adsk.core, adsk.fusion, math, os, json, traceback
-ROOT=r'D:\github\fusion360\space-mouse'
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'))
 OUT=os.path.join(ROOT,'output','rounded')
 V=adsk.core.ValueInput.createByString
 P=adsk.core.Point3D.create

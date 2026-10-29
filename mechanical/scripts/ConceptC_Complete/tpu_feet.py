@@ -1,6 +1,6 @@
 """Four perimeter-following TPU inserts and mating pockets in the single master."""
 import adsk.core, adsk.fusion, os, json, math, traceback
-ROOT=r'D:\github\fusion360\space-mouse'
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'))
 OUT=os.path.join(ROOT,'output','tpu-feet')
 V=adsk.core.ValueInput.createByString
 P=adsk.core.Point3D.create

@@ -2,6 +2,19 @@
 
 Self-contained RP2040 3D mouse firmware and cross-platform Qt6 MVC Manufacturing Tester, Calibration & Buttonless Firmware Updater built in **100% C++17**, following **SOLID** design principles and full off-target **TDD** (GoogleTest + GMock).
 
+## Mechanical enclosure
+
+The project includes a left-hand ergonomic Fusion enclosure, printable parts, assembly instructions and a complete CAD gallery in [mechanical/](mechanical/README.md).
+
+![SpaceMouse assembled CAD](mechanical/docs/images/assembled.png)
+
+<details>
+<summary>Exploded mechanical assembly</summary>
+
+![SpaceMouse exploded CAD](mechanical/docs/images/exploded.png)
+
+</details>
+
 ## Manufacturing Tester & Calibration Wizard Demo
 
 [![pico-3d-mouse Manufacturing Tester & Calibration Demo](docs/media/manufacturing_demo.gif)](docs/media/manufacturing_demo.mp4)

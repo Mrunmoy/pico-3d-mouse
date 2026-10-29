@@ -3,7 +3,7 @@ All model lengths use expressions; API coordinates are centimetres.
 No production mounting holes or print exports until fit validation.
 """
 import adsk.core, adsk.fusion, traceback, json, os, math
-OUT = r'D:\github\fusion360\space-mouse\output'
+OUT = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','output'))
 V = adsk.core.ValueInput.createByString
 P = adsk.core.Point3D.create
 

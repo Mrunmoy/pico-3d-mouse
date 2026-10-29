@@ -1,6 +1,6 @@
 """Reflect the complete current assembly into the specified left-hand layout."""
 import adsk.core,adsk.fusion,os,json,traceback,importlib.util
-ROOT=r'D:\github\fusion360\space-mouse';OUT=os.path.join(ROOT,'output','two-piece')
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'));OUT=os.path.join(ROOT,'output','two-piece')
 def run(req):
  r={}
  try:

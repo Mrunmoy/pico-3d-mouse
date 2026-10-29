@@ -1,6 +1,6 @@
 import adsk.core, adsk.fusion, os, json, traceback
 
-ROOT=r'D:\github\fusion360\space-mouse'
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'))
 OUT=os.path.join(ROOT,'output','fit-test')
 V=adsk.core.ValueInput.createByString
 P=adsk.core.Point3D.create
@@ -11,6 +11,12 @@ def run(context):
         import importlib.util
         with open(complete_request,encoding='utf-8-sig') as f: request=json.load(f)
         os.replace(complete_request,complete_request+'.started')
+        if request.get('action')=='project_gallery':
+            path=os.path.join(ROOT,'scripts','ConceptC_Complete','project_gallery.py')
+            spec=importlib.util.spec_from_file_location('project_gallery',path)
+            module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+            module.run(request)
+            return
         if request.get('action')=='amazon_inserts':
             path=os.path.join(ROOT,'scripts','ConceptC_Complete','amazon_inserts.py')
             spec=importlib.util.spec_from_file_location('amazon_inserts',path)
