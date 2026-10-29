@@ -42,7 +42,7 @@ namespace p3d::ui
 
             {
                 InSequence seq;
-                EXPECT_CALL(serial, sendCommand(QString("ZERO"))).WillOnce(Return(true));
+                EXPECT_CALL(serial, sendCommand(QString("CAL_CENTER"))).WillOnce(Return(true));
                 EXPECT_CALL(serial, sendCommand(QString("CAL_MINMAX_START"))).WillOnce(Return(true));
                 EXPECT_CALL(serial, sendCommand(QString("CAL_MINMAX_END"))).WillOnce(Return(true));
                 EXPECT_CALL(serial, sendCommand(QString("SET_DZ 0 18"))).WillOnce(Return(true));

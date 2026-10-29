@@ -108,7 +108,7 @@ namespace p3d::domain
             return std::nullopt;
         }
 
-        if (verb == "CAL_CENTER" || verb == "z" || verb == "Z")
+        if (verb == "CAL_CENTER" || verb == "ZERO" || verb == "z" || verb == "Z")
         {
             return Command{ CommandType::CalibrateCenter, 0, 0, false };
         }

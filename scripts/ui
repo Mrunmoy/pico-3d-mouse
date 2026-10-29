@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build (if needed) and launch the Qt6 MVC Manufacturing Tester, Calibration &
+# Build (incremental) and launch the Qt6 MVC Manufacturing Tester, Calibration &
 # Buttonless Firmware Updater desktop application.
 #
 # Usage:
@@ -19,9 +19,7 @@ fi
 
 ui_bin="$repo_root/build/src/ui/app/pico_3d_mouse_ui"
 
-if [[ ! -x "$ui_bin" ]]; then
-    cmake -S "$repo_root" -B "$repo_root/build" -G Ninja -DP3D_BUILD_TESTS=ON
-    cmake --build "$repo_root/build" --target pico_3d_mouse_ui
-fi
+cmake -S "$repo_root" -B "$repo_root/build" -G Ninja -DP3D_BUILD_TESTS=ON >/dev/null
+cmake --build "$repo_root/build" --target pico_3d_mouse_ui
 
 exec "$ui_bin" "$@"

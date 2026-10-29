@@ -59,6 +59,18 @@ namespace p3d::ui
 
         m_pages = new QStackedWidget(cardBox);
 
+        const QString blueBtnStyle = QStringLiteral(
+            "QPushButton { background-color: #2563EB; color: white; font-weight: bold; "
+            "padding: 8px 16px; border-radius: 6px; border: 1px solid #3B82F6; }"
+            "QPushButton:hover { background-color: #1D4ED8; }"
+            "QPushButton:pressed { background-color: #1E3A8A; padding-top: 10px; }");
+
+        const QString greenBtnStyle = QStringLiteral(
+            "QPushButton { background-color: #059669; color: white; font-weight: bold; "
+            "padding: 8px 16px; border-radius: 6px; border: 1px solid #10B981; }"
+            "QPushButton:hover { background-color: #047857; }"
+            "QPushButton:pressed { background-color: #064E3B; padding-top: 10px; }");
+
         // ── Page 0: Connect Device ───────────────────────────────────
         {
             auto* page   = new QWidget(m_pages);
@@ -66,14 +78,14 @@ namespace p3d::ui
             m_connectDeviceBtn = new QPushButton(
                 QStringLiteral("Connect to USB-C Serial Port →"), page);
             m_connectDeviceBtn->setMinimumHeight(40);
-            m_connectDeviceBtn->setStyleSheet(
-                QStringLiteral("QPushButton { background-color: #2563EB; color: white; font-weight: bold; "
-                               "padding: 8px 16px; border-radius: 6px; }"));
+            m_connectDeviceBtn->setCursor(Qt::PointingHandCursor);
+            m_connectDeviceBtn->setStyleSheet(blueBtnStyle);
 
             m_openFwUpdaterBtn = new QPushButton(
                 QStringLiteral("Need to Flash / Update Firmware First? Open Buttonless USB Updater"),
                 page);
             m_openFwUpdaterBtn->setMinimumHeight(34);
+            m_openFwUpdaterBtn->setCursor(Qt::PointingHandCursor);
 
             layout->addWidget(m_connectDeviceBtn);
             layout->addWidget(m_openFwUpdaterBtn);
@@ -104,17 +116,19 @@ namespace p3d::ui
             m_captureCenterBtn = new QPushButton(
                 QStringLiteral("Hands Off Joystick — Capture Resting Center Now →"), page);
             m_captureCenterBtn->setMinimumHeight(42);
-            m_captureCenterBtn->setStyleSheet(
-                QStringLiteral("QPushButton { background-color: #059669; color: white; font-weight: bold; "
-                               "padding: 8px 16px; border-radius: 6px; }"));
+            m_captureCenterBtn->setCursor(Qt::PointingHandCursor);
+            m_captureCenterBtn->setStyleSheet(greenBtnStyle);
             layout->addWidget(m_captureCenterBtn);
             layout->addStretch(1);
             m_pages->addWidget(page);
 
-            connect(m_captureCenterBtn,
-                    &QPushButton::clicked,
-                    this,
-                    &ManufacturingWizardWidget::zeroCenterRequested);
+            connect(m_captureCenterBtn, &QPushButton::clicked, this, [this]() {
+                emit zeroCenterRequested();
+                if (m_isConnected)
+                {
+                    setStep(Step::RangeSweep);
+                }
+            });
         }
 
         // ── Page 2: 6-Direction Mechanical Range Sweep ───────────────
@@ -164,17 +178,19 @@ namespace p3d::ui
             m_finishSweepBtn = new QPushButton(
                 QStringLiteral("Lock In Min/Max Travel Range & Continue →"), page);
             m_finishSweepBtn->setMinimumHeight(42);
-            m_finishSweepBtn->setStyleSheet(
-                QStringLiteral("QPushButton { background-color: #2563EB; color: white; font-weight: bold; "
-                               "padding: 8px 16px; border-radius: 6px; }"));
+            m_finishSweepBtn->setCursor(Qt::PointingHandCursor);
+            m_finishSweepBtn->setStyleSheet(blueBtnStyle);
             layout->addWidget(m_finishSweepBtn);
             layout->addStretch(1);
             m_pages->addWidget(page);
 
-            connect(m_finishSweepBtn,
-                    &QPushButton::clicked,
-                    this,
-                    &ManufacturingWizardWidget::minMaxSweepEndRequested);
+            connect(m_finishSweepBtn, &QPushButton::clicked, this, [this]() {
+                emit minMaxSweepEndRequested();
+                if (m_isConnected)
+                {
+                    setStep(Step::VerifyAndTune);
+                }
+            });
         }
 
         // ── Page 3: Deadzone & Polarity Verification ─────────────────
@@ -223,9 +239,8 @@ namespace p3d::ui
             m_confirmTuningBtn = new QPushButton(
                 QStringLiteral("Directions & Deadzone Verified — Proceed to Save →"), page);
             m_confirmTuningBtn->setMinimumHeight(42);
-            m_confirmTuningBtn->setStyleSheet(
-                QStringLiteral("QPushButton { background-color: #059669; color: white; font-weight: bold; "
-                               "padding: 8px 16px; border-radius: 6px; }"));
+            m_confirmTuningBtn->setCursor(Qt::PointingHandCursor);
+            m_confirmTuningBtn->setStyleSheet(greenBtnStyle);
             layout->addWidget(m_confirmTuningBtn);
             layout->addStretch(1);
             m_pages->addWidget(page);
@@ -249,17 +264,19 @@ namespace p3d::ui
             m_saveFlashBtn = new QPushButton(
                 QStringLiteral("Save Calibration Permanently to RP2040 Flash →"), page);
             m_saveFlashBtn->setMinimumHeight(44);
-            m_saveFlashBtn->setStyleSheet(
-                QStringLiteral("QPushButton { background-color: #059669; color: white; font-weight: bold; "
-                               "padding: 8px 16px; border-radius: 6px; }"));
+            m_saveFlashBtn->setCursor(Qt::PointingHandCursor);
+            m_saveFlashBtn->setStyleSheet(greenBtnStyle);
             layout->addWidget(m_saveFlashBtn);
             layout->addStretch(1);
             m_pages->addWidget(page);
 
-            connect(m_saveFlashBtn,
-                    &QPushButton::clicked,
-                    this,
-                    &ManufacturingWizardWidget::saveCalibrationRequested);
+            connect(m_saveFlashBtn, &QPushButton::clicked, this, [this]() {
+                emit saveCalibrationRequested();
+                if (m_isConnected)
+                {
+                    setStep(Step::CompletedPass);
+                }
+            });
         }
 
         // ── Page 5: Manufacturing PASS Certificate ───────────────────
@@ -459,12 +476,14 @@ namespace p3d::ui
 
     void ManufacturingWizardWidget::onDeviceCalibrationEvent(const QString& eventName)
     {
-        if (eventName == QStringLiteral("ZERO_OK") &&
+        if ((eventName == QStringLiteral("CENTER_CALIBRATED") ||
+             eventName == QStringLiteral("ZERO_OK")) &&
             m_currentStep == Step::CenterCalibration)
         {
             setStep(Step::RangeSweep);
         }
-        else if (eventName == QStringLiteral("MINMAX_END") &&
+        else if ((eventName == QStringLiteral("MINMAX_CAPTURED") ||
+                  eventName == QStringLiteral("MINMAX_END")) &&
                  m_currentStep == Step::RangeSweep)
         {
             setStep(Step::VerifyAndTune);

@@ -37,9 +37,10 @@ namespace p3d::ui
 
     void ManufacturingController::requestZeroCenter()
     {
-        if (m_serial.sendCommand(QStringLiteral("ZERO")))
+        if (m_serial.sendCommand(QStringLiteral("CAL_CENTER")))
         {
-            emit statusAnnouncement(QStringLiteral("Sent ZERO command to calibrate resting center."));
+            emit statusAnnouncement(
+                QStringLiteral("Sent CAL_CENTER command to calibrate resting center."));
         }
     }
 
