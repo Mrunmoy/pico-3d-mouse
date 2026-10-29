@@ -1,90 +1,65 @@
-// First hardware bringup target for pico-3d-mouse (RP2040).
+// Composition root for the RP2040 3D Mouse ADC bringup firmware.
 //
-// Responsibilities:
-//   1. Initialize ADC0 (GP26), ADC1 (GP27), and ADC2 (GP28) connected to the
-//      three potentiometer wipers between 3V3(OUT) and AGND.
-//   2. Auto-zero the resting center position on startup (and on 'z' over USB serial).
-//   3. Stream raw 12-bit counts, millivolts, and center-relative deltas over USB-CDC
-//      at 20 Hz while toggling the onboard status LED (GP25).
+// Axis wiring:
+//   - Forward / Backward : ADC0 (GP26, Pin 31)
+//   - Left / Right       : ADC1 (GP27, Pin 32)
+//   - Rotation (Twist)   : ADC2 (GP28, Pin 34)
+//   - Potentiometer +V   : 3V3(OUT) (Pin 36)
+//   - Potentiometer GND  : AGND (Pin 33)
 
-#include <cstdint>
-#include <cstdio>
-
-#include "pico/stdlib.h"
-#include "hardware/gpio.h"
-
-#include "board/pins.hpp"
-#include "drivers/pots.hpp"
-
-namespace
-{
-    constexpr std::uint32_t kSamplePeriodMs = 50;  // 20 Hz telemetry rate
-
-    void initStatusLed()
-    {
-        gpio_init(board::pins::kStatusLedGpio);
-        gpio_set_dir(board::pins::kStatusLedGpio, GPIO_OUT);
-        gpio_put(board::pins::kStatusLedGpio, 1);
-    }
-
-    void printCalibrationBanner(const drivers::pots::Reader& pots)
-    {
-        const auto& c = pots.centerCounts();
-        std::printf(
-            "\r\n[pico-3d-mouse] Center calibrated: "
-            "CH0(GP26)=%4u  CH1(GP27)=%4u  CH2(GP28)=%4u  (press 'z' to re-zero)\r\n",
-            static_cast<unsigned>(c[0]),
-            static_cast<unsigned>(c[1]),
-            static_cast<unsigned>(c[2]));
-    }
-}
+#include "domain/AppController.hpp"
+#include "drivers/OversampledAdcChannel.hpp"
+#include "drivers/PotentiometerArray.hpp"
+#include "platform/rp2040/BoardPins.hpp"
+#include "platform/rp2040/Rp2040AdcHardware.hpp"
+#include "platform/rp2040/Rp2040GpioOutput.hpp"
+#include "platform/rp2040/Rp2040TimeProvider.hpp"
+#include "platform/rp2040/Rp2040UsbSerialIo.hpp"
 
 int main()
 {
-    stdio_init_all();
-    initStatusLed();
+    namespace rp = p3d::platform::rp2040;
 
-    drivers::pots::Reader pots{};
-    pots.init();
+    // ── Platform HAL adapters ────────────────────────────────────
+    rp::Rp2040AdcHardware  adcHw{};
+    rp::Rp2040GpioOutput   statusLed{ rp::pins::kStatusLedGpio };
+    rp::Rp2040UsbSerialIo  serial{};
+    rp::Rp2040TimeProvider time{};
 
-    // Give the analog rails a brief moment to settle after power-on before zeroing.
-    sleep_ms(100);
-    pots.calibrateCenter();
+    // ── Oversampled ADC channel readers ──────────────────────────
+    p3d::drivers::OversampledAdcChannel fwdBackAdc{
+        adcHw, p3d::drivers::AdcChannelConfig{ 0, 16, true, 3300, 4095 }
+    };
+    p3d::drivers::OversampledAdcChannel leftRightAdc{
+        adcHw, p3d::drivers::AdcChannelConfig{ 1, 16, true, 3300, 4095 }
+    };
+    p3d::drivers::OversampledAdcChannel rotationAdc{
+        adcHw, p3d::drivers::AdcChannelConfig{ 2, 16, true, 3300, 4095 }
+    };
 
-    std::uint32_t tick = 0;
-    bool ledState = true;
+    p3d::drivers::PotentiometerArray pots{ fwdBackAdc, leftRightAdc, rotationAdc };
+
+    // ── Application controller ───────────────────────────────────
+    p3d::domain::AppConfig cfg{};
+    cfg.startupSettleMs        = 100;
+    cfg.calibrationSweeps      = 64;
+    cfg.samplePeriodMs         = 50;
+    cfg.ledToggleIntervalTicks = 10;
+    for (auto& ax : cfg.axisConfigs)
+    {
+        ax.deadzoneCounts      = 12;
+        ax.maxDeflectionCounts = 2035;
+        ax.outputScaleMax      = 500;
+        ax.emaAlpha            = 0.35f;
+        ax.invert              = false;
+    }
+
+    p3d::domain::AppController app{ pots, statusLed, serial, time, cfg };
+
+    (void)app.start();
 
     while (true)
     {
-        const int ch = getchar_timeout_us(0);
-        if (ch == 'z' || ch == 'Z')
-        {
-            pots.calibrateCenter();
-            printCalibrationBanner(pots);
-        }
-
-        const drivers::pots::Sample s = pots.read();
-
-        std::printf(
-            "CH0[raw=%4u %4umV d=%+5d]  "
-            "CH1[raw=%4u %4umV d=%+5d]  "
-            "CH2[raw=%4u %4umV d=%+5d]\r\n",
-            static_cast<unsigned>(s.raw[0]),
-            static_cast<unsigned>(s.millivolts[0]),
-            static_cast<int>(s.delta[0]),
-            static_cast<unsigned>(s.raw[1]),
-            static_cast<unsigned>(s.millivolts[1]),
-            static_cast<int>(s.delta[1]),
-            static_cast<unsigned>(s.raw[2]),
-            static_cast<unsigned>(s.millivolts[2]),
-            static_cast<int>(s.delta[2]));
-
-        if ((++tick % 10U) == 0U)
-        {
-            ledState = !ledState;
-            gpio_put(board::pins::kStatusLedGpio, ledState ? 1 : 0);
-        }
-
-        sleep_ms(kSamplePeriodMs);
+        (void)app.tick();
     }
 }

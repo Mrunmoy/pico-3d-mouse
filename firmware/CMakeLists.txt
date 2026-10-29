@@ -1,12 +1,9 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.16)
 
 # ── Pico SDK bootstrap ───────────────────────────────────────────
-# PICO_SDK_PATH is exported by the Nix devShell. Including the SDK's
-# pico_sdk_init.cmake must happen before project() because it injects
-# the cross-compile toolchain file for arm-none-eabi.
 include($ENV{PICO_SDK_PATH}/pico_sdk_init.cmake)
 
-project(pico_3d_mouse C CXX ASM)
+project(pico_3d_mouse_firmware C CXX ASM)
 
 set(CMAKE_C_STANDARD   11)
 set(CMAKE_CXX_STANDARD 17)
@@ -29,8 +26,10 @@ add_compile_options(
 # ── Helpers ──────────────────────────────────────────────────────
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/firmware_app.cmake)
 
-# ── Driver libraries ─────────────────────────────────────────────
-add_subdirectory(lib/drivers_pots)
+# ── Modular Source Tree (HAL + Platform + Drivers + Domain) ──────
+set(P3D_BACKEND "rp2040" CACHE STRING "Backend for platform layer" FORCE)
+set(P3D_BUILD_TESTS OFF CACHE BOOL "Disable host unit tests on target build" FORCE)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../src ${CMAKE_CURRENT_BINARY_DIR}/src)
 
 # ── Applications ─────────────────────────────────────────────────
 add_subdirectory(apps/adc_bringup)

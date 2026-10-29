@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# Autonomous flash + optional serial-capture helper for pico-3d-mouse (RP2040).
+#
+# Usage:
+#   ./scripts/flash [app-name=adc_bringup] [capture-seconds=0]
+#
+# Examples:
+#   ./scripts/flash
+#   ./scripts/flash adc_bringup 5
+#
+# Self-contained: automatically enters `nix develop` if `picotool` is not on PATH,
+# and builds the target UF2 if not yet built.
+
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+
+if ! command -v picotool >/dev/null 2>&1; then
+    exec nix develop "$repo_root" --command "$0" "$@"
+fi
+
+app="${1:-adc_bringup}"
+capture="${2:-0}"
+
+uf2="$repo_root/firmware/build/apps/$app/$app.uf2"
+
+if [[ ! -f "$uf2" ]]; then
+    echo "flash: $uf2 not found — building firmware first..."
+    "$repo_root/build.py" --target-only
+fi
+
+echo "flash: target $uf2"
+
+is_bootsel() {
+    lsusb | grep -Eq "2e8a:(0003|000f)"
+}
+
+is_running_cdc() {
+    lsusb | grep -Eq "2e8a:(000a|0009)"
+}
+
+# ── Step 1: ensure board is in BOOTSEL ────────────────────────────
+if is_bootsel; then
+    echo "flash: board already in BOOTSEL mode"
+elif is_running_cdc; then
+    echo "flash: warm-resetting running firmware into BOOTSEL mode"
+    picotool reboot -f -u >/dev/null 2>&1 || true
+    for _ in {1..15}; do
+        sleep 0.3
+        if is_bootsel; then
+            break
+        fi
+    done
+    if ! is_bootsel; then
+        echo "flash: board did not enter BOOTSEL after warm reset" >&2
+        exit 1
+    fi
+else
+    echo "flash: no RP2040/RP2350 device found on USB" >&2
+    lsusb | grep 2e8a || true
+    exit 1
+fi
+
+# ── Step 2: load + execute ────────────────────────────────────────
+if ! picotool load -x "$uf2" > /tmp/picotool.log 2>&1; then
+    cat /tmp/picotool.log >&2
+    exit 1
+fi
+echo "flash: loaded and executing $app"
+
+# ── Step 3: optional serial capture ───────────────────────────────
+if [[ "$capture" != "0" ]]; then
+    tty=""
+    for _ in {1..25}; do
+        sleep 0.2
+        for candidate in /dev/ttyACM0 /dev/ttyACM1 /dev/ttyACM2 /dev/ttyACM3; do
+            [[ -e "$candidate" ]] || continue
+            props=$(udevadm info -q property -n "$candidate" 2>/dev/null || true)
+            vid=$(awk -F= '/^ID_VENDOR_ID=/  {print $2}' <<< "$props")
+            pid=$(awk -F= '/^ID_MODEL_ID=/   {print $2}' <<< "$props")
+            iface=$(awk -F= '/^ID_USB_INTERFACE_NUM=/ {print $2}' <<< "$props")
+            if [[ "$vid" == "2e8a" && ( "$pid" == "000a" || "$pid" == "0009" ) && "$iface" == "00" ]]; then
+                tty="$candidate"
+                break 2
+            fi
+        done
+    done
+
+    if [[ -z "$tty" ]]; then
+        echo "flash: no stdio ttyACM device found after reboot" >&2
+        ls /dev/ttyACM* 2>/dev/null || true
+        exit 1
+    fi
+
+    echo "flash: capturing ${capture}s from $tty"
+    stty -F "$tty" 115200 cs8 -cstopb -parenb raw -echo 2>/dev/null || true
+    timeout "$capture" cat "$tty" || true
+fi

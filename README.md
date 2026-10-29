@@ -1,63 +1,108 @@
 # pico-3d-mouse
 
-RP2040-based 3D mouse firmware using a 3-axis analog joystick / potentiometer array on the Raspberry Pi Pico.
-
-![Raspberry Pi Pico Pinout](docs/pinout.png)
+Self-contained RP2040 3D mouse firmware built with C++17, SOLID hardware abstractions, and full off-target TDD (GoogleTest + GMock).
 
 ## Hardware Wiring
 
-Each potentiometer has its outer terminals wired between the Pico's analog reference supply and analog ground, with the three wipers routed to the RP2040's three user ADC channels:
+The Raspberry Pi Pico (RP2040) connects to the host computer over **USB-C**. The three potentiometer outer terminals are tied in parallel across `3V3(OUT)` (Pin 36) and `AGND` (Pin 33), with their wipers routed to `ADC0`, `ADC1`, and `ADC2`:
 
-| Signal | Pico Pin | GPIO / Function | Notes |
-| :--- | :---: | :--- | :--- |
-| **Potentiometer +V** | Pin 36 | `3V3(OUT)` | +3.3 V supply rail |
-| **Potentiometer GND** | Pin 33 | `AGND` | Analog ground reference |
-| **Wiper 0 (Ch 0)** | Pin 31 | `GP26 / ADC0` | Analog channel 0 |
-| **Wiper 1 (Ch 1)** | Pin 32 | `GP27 / ADC1` | Analog channel 1 |
-| **Wiper 2 (Ch 2)** | Pin 34 | `GP28 / ADC2` | Analog channel 2 |
-| **Status LED** | — | `GP25` | Onboard LED |
+| Axis / Signal | Potentiometer Terminal | RP2040 GPIO | ADC Channel | Physical Pin |
+| :--- | :--- | :--- | :---: | :---: |
+| **Forward / Backward** | Wiper | `GP26` | `ADC0` | **Pin 31** |
+| **Left / Right** | Wiper | `GP27` | `ADC1` | **Pin 32** |
+| **Rotation (Twist)** | Wiper | `GP28` | `ADC2` | **Pin 34** |
+| **Potentiometer +V** | High side (all 3 pots) | `3V3(OUT)` | — | **Pin 36** |
+| **Potentiometer GND** | Low side (all 3 pots) | `AGND` | — | **Pin 33** |
+| **Status LED** | Onboard LED | `GP25` | — | Onboard |
 
-## Repository Layout
+```mermaid
+flowchart LR
+    Host["Host Computer"] <==>|"USB-C (Power + USB-CDC / HID)"| USB["USB-C Port"]
+
+    subgraph Pico["Raspberry Pi Pico (RP2040)"]
+        USB
+        Pin36["Pin 36: 3V3(OUT) (+3.3V)"]
+        Pin34["Pin 34: GP28 / ADC2"]
+        Pin33["Pin 33: AGND (Analog GND)"]
+        Pin32["Pin 32: GP27 / ADC1"]
+        Pin31["Pin 31: GP26 / ADC0"]
+    end
+
+    subgraph Pots["3-Axis Joystick / Potentiometer Array"]
+        PotFB["Forward / Backward Pot"]
+        PotLR["Left / Right Pot"]
+        PotRot["Rotation (Twist) Pot"]
+    end
+
+    Pin36 -->|"+3.3V"| PotFB & PotLR & PotRot
+    PotFB & PotLR & PotRot -->|"AGND"| Pin33
+
+    PotFB ===>|"Wiper"| Pin31
+    PotLR ===>|"Wiper"| Pin32
+    PotRot ===>|"Wiper"| Pin34
+```
+
+See [docs/WIRING.md](docs/WIRING.md) and [docs/pinout.png](docs/pinout.png) for the full schematic and board pinout.
+
+## SOLID Architecture & Colocated Unit Tests
+
+Every module under `src/` owns its `CMakeLists.txt`, public `include/`, implementation, and colocated `test/CMakeLists.txt` unit test suite:
 
 ```text
 .
+├── build.py                                        # Unified host TDD + RP2040 firmware orchestrator
+├── CMakeLists.txt                                  # Root host build & CTest entry point
+├── flake.nix / flake.lock                          # Hermetic Nix environment (zero external installs)
 ├── docs/
-│   └── pinout.png                      # RP2040 board pinout reference
-├── firmware/
-│   ├── CMakeLists.txt                  # Top-level C++17 Pico SDK build
-│   ├── cmake/
-│   │   └── firmware_app.cmake          # Source-scoped strict compiler warnings
-│   ├── include/
-│   │   ├── board/pins.hpp              # Authoritative pin & ADC channel map
-│   │   └── drivers/pots.hpp            # 3-channel ADC potentiometer driver
-│   ├── lib/
-│   │   └── drivers_pots/               # Oversampled, mux-settled ADC reader
-│   └── apps/
-│       └── adc_bringup/                # USB-CDC 3-axis telemetry & calibration app
-└── flake.nix                           # Reproducible Nix devShell (arm-none-eabi + pico-sdk 2.2.0)
+│   ├── WIRING.md                                   # Detailed schematic & pin wiring diagram
+│   └── pinout.png                                  # RP2040 board pinout
+├── scripts/
+│   ├── build                                       # Build host tests + RP2040 UF2 firmware
+│   ├── test                                        # Run all colocated unit tests with ASan + UBSan
+│   ├── flash                                       # Auto-build, flash UF2, and capture USB-CDC logs
+│   └── console                                     # Open interactive picocom console on /dev/ttyACM*
+├── src/
+│   ├── CMakeLists.txt
+│   ├── cmake/p3d.cmake                             # Module & colocated test helpers
+│   ├── hal/                                        # Pure abstract HAL interfaces (ISP / DIP)
+│   │   ├── CMakeLists.txt
+│   │   ├── include/hal/                            # IAdcHardware, IGpioOutput, ISerialIo, ITimeProvider
+│   │   ├── test_support/                           # GMock HAL mocks
+│   │   └── test/                                   # Colocated HAL contract unit tests
+│   ├── platform/rp2040/                            # Concrete RP2040 Pico SDK HAL adapters
+│   │   ├── CMakeLists.txt
+│   │   ├── include/platform/rp2040/
+│   │   └── test/                                   # Colocated off-target unit tests with SDK stubs
+│   ├── drivers/                                    # Hardware-independent sensor drivers
+│   │   ├── CMakeLists.txt
+│   │   ├── include/drivers/                        # IAdcChannelReader, IPotentiometerSensor, AxisId
+│   │   ├── test_support/                           # GMock driver mocks
+│   │   ├── test/                                   # Colocated driver interface tests
+│   │   ├── adc_channel/                            # OversampledAdcChannel + test/CMakeLists.txt
+│   │   └── pot_array/                              # PotentiometerArray + test/CMakeLists.txt
+│   └── domain/                                     # Pure signal-processing & application logic
+│       ├── CMakeLists.txt
+│       ├── axis_processor/                         # Deadzone, inversion, clamping, EMA + test/
+│       └── app_controller/                         # Control loop, live zeroing, telemetry + test/
+└── firmware/
+    ├── CMakeLists.txt                              # RP2040 cross-compilation entry point
+    └── apps/adc_bringup/                           # RP2040 composition root -> adc_bringup.uf2
 ```
 
-## Building Firmware
+## Quick Start (Zero External Dependencies)
 
-Enter the Nix development shell (or run via `nix develop --command`):
-
-```bash
-nix develop
-cmake -S firmware -B firmware/build -G Ninja
-cmake --build firmware/build
-```
-
-## Flashing & Telemetry (`adc_bringup`)
-
-Load onto the RP2040 over USB in BOOTSEL mode (or warm-reboot with `picotool`):
+All compilers (`g++`, `arm-none-eabi-gcc`), `pico-sdk 2.2.0` (with TinyUSB submodules), `gtest`/`gmock`, `cmake`, `ninja`, and `picotool` are pinned in `flake.lock`. All helper scripts automatically invoke `nix develop` if you are not already inside the dev shell:
 
 ```bash
-picotool load -f firmware/build/apps/adc_bringup/adc_bringup.uf2
-picotool reboot
-```
+# 1. Run all colocated off-target unit tests (with AddressSanitizer + UBSan)
+./scripts/test
 
-Monitor the 3 analog channels over USB-CDC (press `z` at any time to re-zero the resting center):
+# 2. Build both host unit tests and RP2040 UF2 firmware
+./scripts/build
 
-```bash
-picocom -b 115200 /dev/ttyACM0
+# 3. Flash the connected Pico over USB-C and capture 5 seconds of live telemetry
+./scripts/flash adc_bringup 5
+
+# 4. Open interactive serial console (press 'z' to re-zero center at any time)
+./scripts/console
 ```

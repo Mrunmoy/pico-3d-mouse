@@ -1,5 +1,5 @@
 {
-  description = "pico-3d-mouse RP2040 firmware development environment";
+  description = "pico-3d-mouse RP2040 firmware and host TDD development environment";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -27,15 +27,20 @@
           name = "pico-3d-mouse";
 
           packages = with pkgs; [
-            # ── Toolchain ────────────────────────────────────────
+            # ── Host toolchain & off-target TDD ──────────────────
+            gcc
+            gtest
+            clang-tools
+            python3
+
+            # ── RP2040 Cross-Toolchain ───────────────────────────
             # Cortex-M0+ (RP2040) — arm-none-eabi-{gcc,g++,gdb,objdump,...}
             gcc-arm-embedded
 
             # ── Flashing / debugging ─────────────────────────────
-            # picotool: UF2 load + warm reboot into BOOTSEL over USB
             picotool
-            # Raspberry Pi OpenOCD fork with RP2040 support
             openocd-rp2040
+            usbutils
 
             # ── Serial console for USB-CDC ───────────────────────
             picocom
@@ -52,8 +57,9 @@
             export PICO_BOARD=pico
 
             echo "────────────────────────────────────────────────"
-            echo " pico-3d-mouse (RP2040) dev shell ready"
+            echo " pico-3d-mouse (RP2040 + Host TDD) dev shell"
             echo "────────────────────────────────────────────────"
+            echo "  host g++          : $(g++ --version 2>/dev/null | head -1)"
             echo "  arm-none-eabi-gcc : $(arm-none-eabi-gcc --version 2>/dev/null | head -1)"
             echo "  picotool          : $(picotool version 2>&1 | head -1)"
             echo "  cmake             : $(cmake --version 2>/dev/null | head -1)"

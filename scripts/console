@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Open interactive USB-CDC serial console (115200 baud) on the connected RP2040.
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+
+if ! command -v picocom >/dev/null 2>&1; then
+    exec nix develop "$repo_root" --command "$0" "$@"
+fi
+
+tty="${1:-}"
+if [[ -z "$tty" ]]; then
+    for candidate in /dev/ttyACM0 /dev/ttyACM1 /dev/ttyACM2 /dev/ttyACM3; do
+        [[ -e "$candidate" ]] || continue
+        props=$(udevadm info -q property -n "$candidate" 2>/dev/null || true)
+        vid=$(awk -F= '/^ID_VENDOR_ID=/  {print $2}' <<< "$props")
+        pid=$(awk -F= '/^ID_MODEL_ID=/   {print $2}' <<< "$props")
+        iface=$(awk -F= '/^ID_USB_INTERFACE_NUM=/ {print $2}' <<< "$props")
+        if [[ "$vid" == "2e8a" && ( "$pid" == "000a" || "$pid" == "0009" ) && "$iface" == "00" ]]; then
+            tty="$candidate"
+            break
+        fi
+    done
+fi
+
+if [[ -z "$tty" ]]; then
+    echo "console: no Raspberry Pi Pico USB-CDC device found on /dev/ttyACM*" >&2
+    exit 1
+fi
+
+exec picocom -b 115200 "$tty"

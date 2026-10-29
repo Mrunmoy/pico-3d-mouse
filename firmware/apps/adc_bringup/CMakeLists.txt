@@ -4,16 +4,14 @@ add_executable(adc_bringup
 
 firmware_strict_sources(main.cpp)
 
-target_include_directories(adc_bringup PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-)
-
 target_link_libraries(adc_bringup PRIVATE
-    pico_stdlib
-    firmware::drivers::pots
+    p3d::domain::app_controller
+    p3d::drivers::adc_channel
+    p3d::drivers::pot_array
+    p3d::platform::rp2040
 )
 
-# USB-CDC stdio on, UART stdio off — stream telemetry over USB.
+# USB-CDC stdio on, UART stdio off — stream telemetry over USB-C.
 pico_enable_stdio_usb(adc_bringup 1)
 pico_enable_stdio_uart(adc_bringup 0)
 
