@@ -1,0 +1,108 @@
+{
+  "joystick_bodies": [
+    {
+      "name": "Body3",
+      "min": [
+        1.7999999999999998,
+        -1.8500000000000003,
+        0.7039999999999993
+      ],
+      "max": [
+        7.1000000000000005,
+        3.45,
+        9.104
+      ]
+    }
+  ],
+  "handedness": "LEFT hand: wrist at -Y, USB at +Y, joystick at +X",
+  "joystick_centre_x_mm": 44.5,
+  "joint_normal": [
+    -0.14,
+    -0.04,
+    1
+  ],
+  "warnings": [],
+  "parts": [
+    {
+      "name": "Base_Tray",
+      "volume_cm3": 80.9521733897919
+    },
+    {
+      "name": "Palm_Cap",
+      "volume_cm3": 119.08967161248091
+    }
+  ],
+  "minimum_new_post_to_joystick_envelope_clearance_mm": 3,
+  "interference": [],
+  "hardware_and_feet_interference": [],
+  "complete": true,
+  "cloud_name": "SpaceMouse - Split Shell Concept - Review",
+  "cloud_id": "urn:adsk.wipprod:dm.lineage:Oa1GpTwQR8iVvi6D4SRQIg",
+  "screws": "2 x M3x25, 1 x M3x30, 1 x M3x35 ISO10642 countersunk",
+  "inserts": "4 x 3DZWMAN M3 x L4 x D4.2, Amazon AU B0BBSLL6G7",
+  "thread_engagement_mm": 3.2,
+  "print_sent": false,
+  "mounts": [
+    {
+      "x": 28,
+      "y": -26,
+      "seat": 26,
+      "length": 30
+    },
+    {
+      "x": 23.5,
+      "y": 41,
+      "seat": 31,
+      "length": 35
+    },
+    {
+      "x": -37,
+      "y": 30,
+      "seat": 21,
+      "length": 25
+    },
+    {
+      "x": -37,
+      "y": -10,
+      "seat": 21,
+      "length": 25
+    }
+  ],
+  "cloud_saved": true,
+  "cloud_version": 7,
+  "long_insert_assessment": "5.7 mm inserts break through the low palm-side exterior; retain 4 mm inserts unless cap exterior is thickened",
+  "insert_pilot_diameter_mm": 3.8,
+  "insert_pilot_depth_mm": 4.8,
+  "insert_checks": [
+    {
+      "x": 28,
+      "y": -26,
+      "pilot_mm": 3.8,
+      "depth_mm": 4.8,
+      "closed_end": true
+    },
+    {
+      "x": 23.5,
+      "y": 41,
+      "pilot_mm": 3.8,
+      "depth_mm": 4.8,
+      "closed_end": true
+    },
+    {
+      "x": -37,
+      "y": 30,
+      "pilot_mm": 3.8,
+      "depth_mm": 4.8,
+      "closed_end": true
+    },
+    {
+      "x": -37,
+      "y": -10,
+      "pilot_mm": 3.8,
+      "depth_mm": 4.8,
+      "closed_end": true
+    }
+  ],
+  "printed_base_unchanged": true,
+  "physical_insert_retention": "Not yet tested; 3.8 mm engineering starting pilot"
+}

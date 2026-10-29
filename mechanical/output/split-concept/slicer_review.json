@@ -1,0 +1,10 @@
+{
+  "status": "review_only_not_support_free_qualified",
+  "supports_enabled": false,
+  "printer": "Bambu Lab A1 mini 0.4 mm",
+  "layer_height_mm": 0.12,
+  "lower_frame": {"total_minutes": 153, "grams": 37.22, "warning": "floating cantilever"},
+  "palm_cap": {"total_minutes": 209, "grams": 49.83, "warning": "floating regions"},
+  "bottom_cover": {"sliced": false},
+  "print_sent": false
+}

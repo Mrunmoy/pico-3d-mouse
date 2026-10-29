@@ -1,0 +1,22 @@
+{
+  "images": [
+    "01_Front_wrist_edge.png",
+    "02_Rear_USB_edge.png",
+    "03_Left_joystick_end.png",
+    "04_Right_palm_end.png",
+    "05_Top.png",
+    "06_Bottom.png",
+    "07_Front_left.png",
+    "08_Front_right.png",
+    "09_Rear_right.png",
+    "Body_01_Front_wrist_edge.png",
+    "Body_03_Left_joystick_end.png",
+    "Body_05_Top.png",
+    "Body_07_Front_left.png",
+    "Body_08_Front_right.png"
+  ],
+  "complete": true,
+  "source_file": "SpaceMouse Concept C - Left Hand Recessed Mount R2",
+  "source_id": "urn:adsk.wipprod:dm.lineage:BfuyUQ4XTJGKQyfE52KnBw",
+  "note": "Current rejected dome shape, unmodified. Shaded CAD viewport images, not photorealistic renders. Joystick/boot are simplified engineering proxies."
+}

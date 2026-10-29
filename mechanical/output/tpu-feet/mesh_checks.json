@@ -1,0 +1,62 @@
+[
+  {
+    "part": "Bottom_Cover",
+    "watertight": true,
+    "triangles": 58522,
+    "extent_mm": [
+      157.73554217451655,
+      154.50658511900164,
+      10.300000190734863
+    ],
+    "volume_mm3": 47021.482522152604,
+    "file": "Bottom_Cover_print.stl"
+  },
+  {
+    "part": "TPU_Strip_1",
+    "watertight": true,
+    "triangles": 2364,
+    "extent_mm": [
+      43.51411819458008,
+      11.606430053710938,
+      1.600000023841858
+    ],
+    "volume_mm3": 384.3560525601815,
+    "file": "TPU_Strip_1_print.stl"
+  },
+  {
+    "part": "TPU_Strip_2",
+    "watertight": true,
+    "triangles": 2820,
+    "extent_mm": [
+      18.181976318359375,
+      36.57954549789429,
+      1.600000023841858
+    ],
+    "volume_mm3": 350.6098242167712,
+    "file": "TPU_Strip_2_print.stl"
+  },
+  {
+    "part": "TPU_Strip_3",
+    "watertight": true,
+    "triangles": 2280,
+    "extent_mm": [
+      44.71075987815857,
+      6.518558502197266,
+      1.600000023841858
+    ],
+    "volume_mm3": 390.1668243305255,
+    "file": "TPU_Strip_3_print.stl"
+  },
+  {
+    "part": "TPU_Strip_4",
+    "watertight": true,
+    "triangles": 2304,
+    "extent_mm": [
+      44.08937740325928,
+      11.668405532836914,
+      1.600000023841858
+    ],
+    "volume_mm3": 388.926085128548,
+    "file": "TPU_Strip_4_print.stl"
+  }
+]
