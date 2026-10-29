@@ -16,7 +16,7 @@ Left-hand ergonomic enclosure for the project's joystick and USB-C RP2040 Pico b
 | Original design brief | [Engineering specification](SpaceMouse_Concept_C_Engineering_Spec.md) |
 | Joystick manufacturer drawing | [PDF](om300b.pdf) |
 
-Only `output/two-piece/` is the current enclosure release. Other output folders retain earlier design stages and builder dependencies; do not mix their print parts. The native model retains earlier source components, which are hidden and not printable accessories.
+Only `output/two-piece/` is the current enclosure release. Obsolete variation folders and rebuild scripts have been removed; recover them from Git history when needed. The native model retains earlier source components, which are hidden and not printable accessories.
 
 ## CAD gallery
 
@@ -60,13 +60,17 @@ The current combined cap/clamp plate was sliced for A1 mini, 0.4 mm nozzle, eSun
 All future mechanical changes belong in this repository under `mechanical/`. Preserve the existing single cloud document in the SpaceMouse project; do not create multiple master designs. Cloud identity: `urn:adsk.wipprod:dm.lineage:Oa1GpTwQR8iVvi6D4SRQIg`.
 
 1. Open the current F3D locally if Fusion cloud access is unavailable. Editing a local import does not automatically update the original cloud document: reconcile it deliberately once online.
-2. Register `mechanical/scripts/ConceptC_FitTest` in Fusion's Scripts and Add-Ins panel. The dispatcher reads a deliberately queued JSON request from `mechanical/scripts/ConceptC_Complete/queued.json`; review the requested action before running it. It contains historical rebuild and cloud-cleanup actions, so do not run arbitrary requests.
+2. Register `mechanical/scripts/ConceptC_FitTest` in Fusion's Scripts and Add-Ins panel. The dispatcher reads a deliberately queued JSON request from `mechanical/scripts/ConceptC_Complete/queued.json`; review the requested action before running it. Only `project_gallery` and `amazon_inserts` are supported; obsolete rebuild and cloud-cleanup actions have been removed.
 3. Scripts now resolve paths relative to `mechanical/`, independent of checkout location. The scripts use Fusion's `adsk` Python API and must run inside Fusion; mesh/slicer packaging scripts run externally with NumPy and local Bambu Studio.
 4. After modifying CAD, save/update the master archive, regenerate the corresponding meshes and slicer projects, validate geometry and print orientation, refresh this gallery, and commit the affected files together.
 5. To refresh all orthographic views, queue `{"action":"project_gallery"}` and run the dispatcher. This imports the saved local master and exports to `docs/images/` without saving cloud geometry. Exploded/internal views are currently maintained with `two_piece.finish`; refresh them when geometry changes.
 
-The exterior includes preserved BRep geometry derived from prior parametric lofts; not every exterior shape is driven by a single live parameter. Current fasteners, insert pockets and registration features remain editable. Earlier builders and their baselines are retained for traceability.
+The exterior includes preserved BRep geometry derived from prior parametric lofts; not every exterior shape is driven by a single live parameter. Current fasteners, insert pockets and registration features remain editable. Earlier builders and baselines are recoverable from Git history, rather than kept in working folders.
 
 ## Migration
 
 On 29 October 2026 the original mechanical repository through commit `147712c` was imported as a Git subtree, preserving its history. This `pico-3d-mouse` repository is now the authoritative location for mechanical, electronics and firmware work. Personal source photographs and untracked scratch exports were not imported.
+
+## Retired variations
+
+On 29 October 2026 obsolete ergonomic trials, split concepts, fit-test builders and pre-release exports were removed from the working tree. Recover them from commit `876aab3` or earlier; all history remains in this repository. Current source components inside the native CAD are preserved to avoid breaking its feature timeline. TPU strip bodies remain in that master and can be exported from it when required.
