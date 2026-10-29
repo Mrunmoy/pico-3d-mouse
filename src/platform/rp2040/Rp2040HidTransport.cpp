@@ -33,6 +33,7 @@ namespace p3d::platform::rp2040
     bool Rp2040HidTransport::init()
     {
         m_firstReport = true;
+        m_sendRotNext = false;
         return true;
     }
 
@@ -48,6 +49,9 @@ namespace p3d::platform::rp2040
             return false;
         }
 
+        const bool transNonZero = (report.tx != 0) || (report.ty != 0) || (report.tz != 0);
+        const bool rotNonZero   = (report.rx != 0) || (report.ry != 0) || (report.rz != 0);
+
         const bool transChanged = m_firstReport ||
                                   (report.tx != m_lastSent.tx) ||
                                   (report.ty != m_lastSent.ty) ||
@@ -58,10 +62,10 @@ namespace p3d::platform::rp2040
                                 (report.ry != m_lastSent.ry) ||
                                 (report.rz != m_lastSent.rz);
 
-        bool sentAny = false;
+        const bool needTrans = transNonZero || transChanged;
+        const bool needRot   = rotNonZero || rotChanged;
 
-        if (transChanged)
-        {
+        auto sendTrans = [&]() -> bool {
             std::array<std::uint8_t, 6> payload{};
             packVec3Le(payload, report.tx, report.ty, report.tz);
             if (tud_hid_report(kReportIdTranslation, payload.data(), payload.size()))
@@ -69,11 +73,12 @@ namespace p3d::platform::rp2040
                 m_lastSent.tx = report.tx;
                 m_lastSent.ty = report.ty;
                 m_lastSent.tz = report.tz;
-                sentAny       = true;
+                return true;
             }
-        }
-        else if (rotChanged)
-        {
+            return false;
+        };
+
+        auto sendRot = [&]() -> bool {
             std::array<std::uint8_t, 6> payload{};
             packVec3Le(payload, report.rx, report.ry, report.rz);
             if (tud_hid_report(kReportIdRotation, payload.data(), payload.size()))
@@ -81,8 +86,34 @@ namespace p3d::platform::rp2040
                 m_lastSent.rx = report.rx;
                 m_lastSent.ry = report.ry;
                 m_lastSent.rz = report.rz;
-                sentAny       = true;
+                return true;
             }
+            return false;
+        };
+
+        bool sentAny = false;
+        if (needTrans && needRot)
+        {
+            if (m_sendRotNext)
+            {
+                sentAny = sendRot();
+                m_sendRotNext = false;
+            }
+            else
+            {
+                sentAny = sendTrans();
+                m_sendRotNext = true;
+            }
+        }
+        else if (needTrans)
+        {
+            sentAny = sendTrans();
+            m_sendRotNext = true;
+        }
+        else if (needRot)
+        {
+            sentAny = sendRot();
+            m_sendRotNext = false;
         }
 
         if (sentAny)

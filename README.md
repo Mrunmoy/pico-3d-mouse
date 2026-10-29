@@ -16,10 +16,10 @@ Self-contained RP2040 3D mouse firmware and cross-platform Qt6 MVC Manufacturing
 
 ## Key Features
 
-- **Composite USB-C Device (`0x2E8A:0x000A`)**:
-  - **6-DOF Multi-Axis Controller HID** (Interface 3): Standard USB HID Usage Page `0x01`, Usage `0x08` reporting 16-bit signed translation (`X, Y, Z`) and rotation (`Rx, Ry, Rz`) vectors in `[-500, +500]`.
-  - **USB-CDC Telemetry & Calibration Serial** (Interfaces 0 & 1): Streams live oversampled 12-bit ADC readings, millivolts, conditioned deltas, and scaled outputs, and accepts line-based calibration commands (`ZERO`, `CAL_MINMAX_START`, `CAL_MINMAX_END`, `SET_DZ`, `SET_INV`, `SAVE_CAL`, `LOAD_CAL`, `RESET_CAL`, `GET_CAL`, `BOOTSEL`).
-  - **RP2040 USB Reset Interface** (Interface 2): Supports 100% buttonless software warm-reset into USB-BOOT (`BOOTSEL`) mode.
+- **Composite USB-C 3Dconnexion SpaceNavigator (`0x046D:0xC626`)**:
+  - **Autodesk Fusion 360 & CAD Compatible** (Interface 3): Emulates the official **3Dconnexion SpaceNavigator (`VID = 0x046D`, `PID = 0xC626`)** 6-DOF Multi-Axis Controller HID descriptor (`Report ID 1`: Translation `X, Y, Z`, `Report ID 2`: Rotation `Rx, Ry, Rz` in `[-500, +500]`, `Report ID 3`: Buttons, `Report ID 4`: LED) so **3DxWare** (Fusion 360, SolidWorks, Rhino, OnShape) as well as **FreeCAD**, **Blender**, and `spacenavd` recognize the mouse natively.
+  - **USB-CDC Telemetry & Calibration Serial** (Interfaces 0 & 1): Simultaneously exposes `/dev/ttyACM0` (`COMx`) streaming live oversampled 12-bit ADC readings, millivolts, conditioned deltas, and scaled outputs, and accepting line-based calibration commands (`ZERO`, `CAL_MINMAX_START`, `CAL_MINMAX_END`, `SET_DZ`, `SET_INV`, `SAVE_CAL`, `LOAD_CAL`, `RESET_CAL`, `GET_CAL`, `BOOTSEL`).
+  - **1200-Baud & Software USB Reset Interface** (Interface 2): Supports 100% buttonless software warm-reset into USB-BOOT (`BOOTSEL`) mode without ever touching the physical button inside the enclosure.
 - **Non-Volatile QSPI Flash Calibration Store**:
   - Persists per-axis center bias, min/max mechanical travel limits, deadzone counts, and polarity inversion to the final 4 KB sector of RP2040 internal QSPI Flash, protected by a magic header, schema version, and **IEEE 802.3 CRC-32** checksum.
 - **Qt6 MVC Manufacturing Tester, Calibration & Buttonless Firmware Updater (`./scripts/ui`)**:

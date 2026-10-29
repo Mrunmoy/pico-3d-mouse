@@ -32,11 +32,18 @@ fi
 echo "flash: target $uf2"
 
 is_bootsel() {
-    lsusb | grep -Eq "2e8a:(0003|000f)"
+    lsusb | grep -Eqi "2e8a:(0003|000f)"
 }
 
 is_running_cdc() {
-    lsusb | grep -Eq "2e8a:(000a|0009)"
+    lsusb | grep -Eqi "2e8a:(000a|0009)|046d:c626"
+}
+
+trigger_serial_bootsel() {
+    for candidate in /dev/ttyACM0 /dev/ttyACM1 /dev/ttyACM2 /dev/ttyACM3; do
+        [[ -e "$candidate" ]] || continue
+        stty -F "$candidate" 1200 2>/dev/null || true
+    done
 }
 
 # ── Step 1: ensure board is in BOOTSEL ────────────────────────────
@@ -44,6 +51,7 @@ if is_bootsel; then
     echo "flash: board already in BOOTSEL mode"
 elif is_running_cdc; then
     echo "flash: warm-resetting running firmware into BOOTSEL mode"
+    trigger_serial_bootsel
     picotool reboot -f -u >/dev/null 2>&1 || true
     for _ in {1..15}; do
         sleep 0.3
@@ -57,7 +65,7 @@ elif is_running_cdc; then
     fi
 else
     echo "flash: no RP2040/RP2350 device found on USB" >&2
-    lsusb | grep 2e8a || true
+    lsusb | grep -Ei "2e8a|046d" || true
     exit 1
 fi
 
@@ -76,10 +84,10 @@ if [[ "$capture" != "0" ]]; then
         for candidate in /dev/ttyACM0 /dev/ttyACM1 /dev/ttyACM2 /dev/ttyACM3; do
             [[ -e "$candidate" ]] || continue
             props=$(udevadm info -q property -n "$candidate" 2>/dev/null || true)
-            vid=$(awk -F= '/^ID_VENDOR_ID=/  {print $2}' <<< "$props")
-            pid=$(awk -F= '/^ID_MODEL_ID=/   {print $2}' <<< "$props")
+            vid=$(awk -F= '/^ID_VENDOR_ID=/  {print tolower($2)}' <<< "$props")
+            pid=$(awk -F= '/^ID_MODEL_ID=/   {print tolower($2)}' <<< "$props")
             iface=$(awk -F= '/^ID_USB_INTERFACE_NUM=/ {print $2}' <<< "$props")
-            if [[ "$vid" == "2e8a" && ( "$pid" == "000a" || "$pid" == "0009" ) && "$iface" == "00" ]]; then
+            if [[ ( ( "$vid" == "2e8a" && ( "$pid" == "000a" || "$pid" == "0009" ) ) || ( "$vid" == "046d" && "$pid" == "c626" ) ) && "$iface" == "00" ]]; then
                 tty="$candidate"
                 break 2
             fi

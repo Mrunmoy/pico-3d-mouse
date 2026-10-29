@@ -124,7 +124,7 @@ namespace p3d::test
         EXPECT_TRUE(sdk_stub::state().bootloaderEntered);
     }
 
-    TEST_F(Rp2040PlatformTest, HidTransportSendsReportsOnlyWhenReadyAndChanged)
+    TEST_F(Rp2040PlatformTest, HidTransportStreamsWhenDeflectedAndSuppressesIdleZeroPackets)
     {
         rp::Rp2040HidTransport hid{};
         EXPECT_TRUE(hid.init());
@@ -141,14 +141,24 @@ namespace p3d::test
         EXPECT_EQ(sdk_stub::state().hidReportCount, 1U);
         EXPECT_EQ(sdk_stub::state().lastHidReportId, rp::Rp2040HidTransport::kReportIdTranslation);
 
-        // Sending identical report again should not re-transmit redundant packet
-        EXPECT_TRUE(hid.sendMotionReport(r));
-        EXPECT_EQ(sdk_stub::state().hidReportCount, 1U);
-
-        // Changing rotation sends Report ID 2
-        r.rz = 200;
+        // Holding non-zero deflection continues streaming relative reports for 3DxWare / Fusion 360
         EXPECT_TRUE(hid.sendMotionReport(r));
         EXPECT_EQ(sdk_stub::state().hidReportCount, 2U);
+        EXPECT_EQ(sdk_stub::state().lastHidReportId, rp::Rp2040HidTransport::kReportIdTranslation);
+
+        // Simultaneous translation + rotation alternates between Report ID 1 and Report ID 2
+        r.rz = 200;
+        EXPECT_TRUE(hid.sendMotionReport(r));
+        EXPECT_EQ(sdk_stub::state().hidReportCount, 3U);
         EXPECT_EQ(sdk_stub::state().lastHidReportId, rp::Rp2040HidTransport::kReportIdRotation);
+
+        // Returning to center (0,0,0) sends final zero reports and then stays silent at rest
+        r = hal::MotionReport6Dof{};
+        EXPECT_TRUE(hid.sendMotionReport(r)); // zeros translation
+        EXPECT_EQ(sdk_stub::state().hidReportCount, 4U);
+        EXPECT_TRUE(hid.sendMotionReport(r)); // zeros rotation
+        EXPECT_EQ(sdk_stub::state().hidReportCount, 5U);
+        EXPECT_TRUE(hid.sendMotionReport(r)); // idle at rest -> no packet sent
+        EXPECT_EQ(sdk_stub::state().hidReportCount, 5U);
     }
 }

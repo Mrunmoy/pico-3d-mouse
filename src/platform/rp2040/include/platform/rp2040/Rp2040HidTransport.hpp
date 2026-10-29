@@ -19,5 +19,6 @@ namespace p3d::platform::rp2040
     private:
         hal::MotionReport6Dof m_lastSent{};
         bool                  m_firstReport = true;
+        bool                  m_sendRotNext = false;
     };
 }
